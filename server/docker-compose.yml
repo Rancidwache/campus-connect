@@ -1,0 +1,19 @@
+# Local PostgreSQL for development.
+#   docker compose up -d
+# Matches the default DATABASE_URL in .env.example.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: campusconnect-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: campusconnect
+      POSTGRES_PASSWORD: campusconnect
+      POSTGRES_DB: campusconnect
+    ports:
+      - '5432:5432'
+    volumes:
+      - campusconnect_pgdata:/var/lib/postgresql/data
+
+volumes:
+  campusconnect_pgdata:

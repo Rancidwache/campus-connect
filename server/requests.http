@@ -1,0 +1,71 @@
+@base = http://localhost:4000/api
+
+### Health
+GET {{base}}/health
+
+### Register (OTP_DEV_ECHO=true returns devCode)
+# @name register
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Test User",
+  "phoneNumber": "0712345678",
+  "password": "Password123"
+}
+
+### Verify phone — paste the devCode from the register response
+POST {{base}}/auth/verify-phone
+Content-Type: application/json
+
+{
+  "phoneNumber": "0712345678",
+  "code": "000000"
+}
+
+### Login (seeded user)
+# @name login
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "phoneNumber": "+254712000001",
+  "password": "Password123"
+}
+
+@token = {{login.response.body.token}}
+
+### My profile
+GET {{base}}/users/me
+Authorization: Bearer {{token}}
+
+### Register E2EE public key
+PUT {{base}}/users/me/public-key
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "publicKey": "BASE64_OR_HEX_PUBLIC_KEY_AT_LEAST_32_CHARS_LONG_XXXXX" }
+
+### Browse listings
+GET {{base}}/listings?sort=newest&page=1&pageSize=10
+
+### Search listings
+GET {{base}}/listings?q=camera&categoryType=PHYSICAL&maxPrice=3000
+
+### My listings
+GET {{base}}/listings?mine=true
+Authorization: Bearer {{token}}
+
+### Create a listing
+POST {{base}}/listings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "categoryType": "DIGITAL",
+  "category": "Web Development",
+  "title": "Landing page in a weekend",
+  "description": "Single-page responsive site with a contact form and deployment.",
+  "price": 12000,
+  "location": "Online"
+}

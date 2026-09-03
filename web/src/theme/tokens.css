@@ -1,0 +1,161 @@
+/* Campus Connect V2 — design tokens.
+   One small system shared by web now, and by the native app later.
+   Priorities from the proposal: speed and trust signals over decoration. */
+
+:root {
+  /* Brand */
+  --cc-teal-700: #0f766e;
+  --cc-teal-600: #0d9488;
+  --cc-teal-500: #14b8a6;
+  --cc-teal-50: #f0fdfa;
+
+  /* Neutrals */
+  --cc-ink: #0f172a;
+  --cc-body: #334155;
+  --cc-muted: #64748b;
+  --cc-line: #e2e8f0;
+  --cc-surface: #ffffff;
+  --cc-bg: #f8fafc;
+
+  /* Status — used for escrow badges (Funds Secured / Awaiting Approval / Released) */
+  --cc-ok: #15803d;
+  --cc-ok-bg: #dcfce7;
+  --cc-warn: #b45309;
+  --cc-warn-bg: #fef3c7;
+  --cc-info: #1d4ed8;
+  --cc-info-bg: #dbeafe;
+  --cc-danger: #b91c1c;
+  --cc-danger-bg: #fee2e2;
+
+  /* Spacing scale */
+  --cc-s1: 4px;
+  --cc-s2: 8px;
+  --cc-s3: 12px;
+  --cc-s4: 16px;
+  --cc-s5: 24px;
+  --cc-s6: 32px;
+  --cc-s7: 48px;
+
+  --cc-radius: 12px;
+  --cc-radius-sm: 8px;
+  --cc-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.06);
+
+  --cc-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --cc-maxw: 960px;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--cc-font);
+  color: var(--cc-body);
+  background: var(--cc-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--cc-teal-700); }
+
+h1, h2, h3 { color: var(--cc-ink); line-height: 1.2; margin: 0 0 var(--cc-s3); }
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+
+p { margin: 0 0 var(--cc-s3); }
+
+.container {
+  max-width: var(--cc-maxw);
+  margin: 0 auto;
+  padding: var(--cc-s5) var(--cc-s4) var(--cc-s7);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cc-s2);
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: var(--cc-radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-primary { background: var(--cc-teal-700); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--cc-teal-600); }
+.btn-ghost { background: transparent; border-color: var(--cc-line); color: var(--cc-ink); }
+.btn-ghost:hover:not(:disabled) { background: var(--cc-teal-50); }
+.btn-block { width: 100%; }
+.btn-sm { padding: 6px 10px; font-size: 0.85rem; }
+
+/* Forms */
+.field { margin-bottom: var(--cc-s4); }
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--cc-ink);
+  margin-bottom: 6px;
+}
+.input, .textarea, .select {
+  width: 100%;
+  font: inherit;
+  color: var(--cc-ink);
+  padding: 10px 12px;
+  border: 1px solid var(--cc-line);
+  border-radius: var(--cc-radius-sm);
+  background: var(--cc-surface);
+}
+.input:focus, .textarea:focus, .select:focus {
+  outline: 2px solid var(--cc-teal-500);
+  outline-offset: 1px;
+  border-color: var(--cc-teal-500);
+}
+.textarea { min-height: 120px; resize: vertical; }
+.hint { font-size: 0.8rem; color: var(--cc-muted); margin-top: 6px; }
+
+/* Cards */
+.card {
+  background: var(--cc-surface);
+  border: 1px solid var(--cc-line);
+  border-radius: var(--cc-radius);
+  box-shadow: var(--cc-shadow);
+  padding: var(--cc-s5);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.badge-digital { background: var(--cc-info-bg); color: var(--cc-info); }
+.badge-physical { background: var(--cc-warn-bg); color: var(--cc-warn); }
+.badge-ok { background: var(--cc-ok-bg); color: var(--cc-ok); }
+.badge-muted { background: #f1f5f9; color: var(--cc-muted); }
+
+/* Utility */
+.row { display: flex; gap: var(--cc-s3); flex-wrap: wrap; }
+.row-between { display: flex; justify-content: space-between; align-items: center; gap: var(--cc-s3); }
+.stack > * + * { margin-top: var(--cc-s4); }
+.grid-listings {
+  display: grid;
+  gap: var(--cc-s4);
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.muted { color: var(--cc-muted); }
+.error-text { color: var(--cc-danger); font-size: 0.9rem; }
+.center-narrow { max-width: 420px; margin: var(--cc-s6) auto; }
+.price { font-weight: 800; color: var(--cc-ink); }
