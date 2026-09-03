@@ -22,7 +22,11 @@ npm install
   psql -U postgres -h 127.0.0.1 -f scripts/bootstrap-db.sql
   ```
 
-- **Your own connection string:** edit `DATABASE_URL` in `.env` to point anywhere.
+- **Supabase (hosted Postgres):** from Project Settings → Database → Connection string,
+  set `DATABASE_URL` to the transaction pooler URI (port `6543`) with
+  `?pgbouncer=true&connection_limit=1`, and `DIRECT_URL` to the direct/session URI
+  (port `5432`). Then run the migrate + seed steps below as normal.
+- **Your own connection string:** edit `DATABASE_URL` (and `DIRECT_URL`) in `.env`.
 
 Then:
 

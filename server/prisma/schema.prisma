@@ -6,8 +6,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Pooled connection for the running app. On Supabase this is the transaction
+  // pooler (port 6543) with ?pgbouncer=true.
+  url       = env("DATABASE_URL")
+  // Unpooled connection used only for migrations / introspection. For a plain
+  // local Postgres, set DIRECT_URL equal to DATABASE_URL.
+  directUrl = env("DIRECT_URL")
 }
 
 enum CategoryType {
