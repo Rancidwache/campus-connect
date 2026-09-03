@@ -50,4 +50,30 @@ export const env = {
       senderId: process.env.AT_SENDER_ID || '',
     },
   },
+
+  // Base URL this API is reachable at — used to build M-Pesa callback URLs and,
+  // in mock mode, for the simulator to call its own webhooks.
+  selfBaseUrl: process.env.SELF_BASE_URL || `http://localhost:${int('PORT', 4000)}`,
+
+  mpesa: {
+    // mock | sandbox | production
+    mode: process.env.MPESA_MODE || 'mock',
+    // Platform commission taken on top of the listing price (0.10 = 10%).
+    platformFeeRate: Number.parseFloat(process.env.PLATFORM_FEE_RATE || '0.10'),
+    // Unguessable path segment on the webhook routes (defence in depth alongside
+    // a Safaricom IP allow-list at the gateway).
+    callbackSecret: process.env.MPESA_CALLBACK_SECRET || 'dev-callback-secret',
+    // In mock mode, how long before the simulator fires the STK / B2C callback.
+    mockDelayMs: int('MPESA_MOCK_DELAY_MS', 4000),
+
+    consumerKey: process.env.MPESA_CONSUMER_KEY || '',
+    consumerSecret: process.env.MPESA_CONSUMER_SECRET || '',
+    // STK Push (Lipa na M-Pesa Online)
+    shortcode: process.env.MPESA_SHORTCODE || '',
+    passkey: process.env.MPESA_PASSKEY || '',
+    // B2C
+    b2cShortcode: process.env.MPESA_B2C_SHORTCODE || '',
+    initiatorName: process.env.MPESA_INITIATOR_NAME || '',
+    securityCredential: process.env.MPESA_SECURITY_CREDENTIAL || '',
+  },
 };

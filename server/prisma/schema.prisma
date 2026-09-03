@@ -31,10 +31,34 @@ enum OtpPurpose {
   LOGIN
 }
 
+// The proposal's ERD names the three resting states (Held, Released, Refunded).
+// The extra values are the operational transitions in between.
 enum EscrowStatus {
-  HELD
-  RELEASED
-  REFUNDED
+  PENDING_PAYMENT // STK Push sent; waiting for the client's PIN + Safaricom callback
+  PAYMENT_FAILED  // STK Push cancelled, wrong PIN, timed out, or insufficient funds
+  HELD            // deposit confirmed and secured in escrow  ("Funds Secured")
+  RELEASING       // B2C payout to the provider in flight
+  RELEASED        // paid out to the provider                 ("Released")
+  REFUNDING       // B2C refund to the client in flight
+  REFUNDED        // returned to the client                   ("Refunded")
+  CANCELLED       // client cancelled before paying
+}
+
+enum MpesaEventKind {
+  STK_PUSH_REQUEST
+  STK_CALLBACK
+  B2C_REQUEST
+  B2C_RESULT
+  B2C_TIMEOUT
+}
+
+enum NotificationType {
+  ESCROW_FUNDED
+  PAYMENT_FAILED
+  DELIVERY_APPROVED
+  ESCROW_RELEASED
+  ESCROW_REFUNDED
+  JOB_DECLINED
 }
 
 model User {
@@ -47,12 +71,13 @@ model User {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  listings             Listing[]
-  otpCodes             OtpCode[]
-  transactionsAsClient Transaction[] @relation("ClientTransactions")
-  transactionsAsProvider Transaction[] @relation("ProviderTransactions")
-  messagesSent         Message[]     @relation("SentMessages")
-  messagesReceived     Message[]     @relation("ReceivedMessages")
+  listings               Listing[]
+  otpCodes               OtpCode[]
+  transactionsAsClient   Transaction[]  @relation("ClientTransactions")
+  transactionsAsProvider Transaction[]  @relation("ProviderTransactions")
+  messagesSent           Message[]      @relation("SentMessages")
+  messagesReceived       Message[]      @relation("ReceivedMessages")
+  notifications          Notification[]
 
   @@map("users")
 }
@@ -93,25 +118,84 @@ model Listing {
   @@map("listings")
 }
 
-// ── Module 2 (HustleGuard escrow) — schema in place, endpoints pending ──
+// ── Module 2 — HustleGuard escrow ──
 model Transaction {
-  id              Int          @id @default(autoincrement()) @map("transaction_id")
-  listingId       Int          @map("listing_id")
-  listing         Listing      @relation(fields: [listingId], references: [id])
-  clientId        Int          @map("client_id")
-  client          User         @relation("ClientTransactions", fields: [clientId], references: [id])
-  providerId      Int          @map("provider_id")
-  provider        User         @relation("ProviderTransactions", fields: [providerId], references: [id])
-  amount          Decimal      @db.Decimal(12, 2)
-  escrowStatus    EscrowStatus @default(HELD) @map("escrow_status")
-  mpesaCheckoutId String?      @map("mpesa_checkout_id")
-  mpesaReceipt    String?      @map("mpesa_receipt")
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
+  id         Int     @id @default(autoincrement()) @map("transaction_id")
+  listingId  Int     @map("listing_id")
+  listing    Listing @relation(fields: [listingId], references: [id])
+  clientId   Int     @map("client_id")
+  client     User    @relation("ClientTransactions", fields: [clientId], references: [id])
+  providerId Int     @map("provider_id")
+  provider   User    @relation("ProviderTransactions", fields: [providerId], references: [id])
+
+  currency    String  @default("KES")
+  feeAmount   Decimal @map("fee_amount") @db.Decimal(12, 2) // the provider's payout
+  platformFee Decimal @map("platform_fee") @db.Decimal(12, 2) // Campus Connect commission
+  amount      Decimal @db.Decimal(12, 2) // total charged to the client (fee + platformFee)
+
+  escrowStatus  EscrowStatus @default(PENDING_PAYMENT) @map("escrow_status")
+  clientPhone   String       @map("client_phone") // E.164 snapshot — STK Push target
+  providerPhone String       @map("provider_phone") // E.164 snapshot — B2C payout target
+
+  // STK Push (deposit collection)
+  stkCheckoutRequestId String?   @unique @map("stk_checkout_request_id")
+  stkMerchantRequestId String?   @map("stk_merchant_request_id")
+  stkResultCode        Int?      @map("stk_result_code")
+  stkResultDesc        String?   @map("stk_result_desc")
+  mpesaReceipt         String?   @map("mpesa_receipt") // deposit confirmation receipt
+  paidAt               DateTime? @map("paid_at")
+
+  // B2C (payout to provider, or refund to client)
+  b2cConversationId String?   @unique @map("b2c_conversation_id")
+  b2cResultCode     Int?      @map("b2c_result_code")
+  b2cResultDesc     String?   @map("b2c_result_desc")
+  b2cReceipt        String?   @map("b2c_receipt")
+  releasedAt        DateTime? @map("released_at")
+  refundedAt        DateTime? @map("refunded_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  events        MpesaEvent[]
+  notifications Notification[]
 
   @@index([clientId])
   @@index([providerId])
+  @@index([escrowStatus])
   @@map("transactions")
+}
+
+// Raw log of every Daraja request and callback — idempotency guard + audit trail.
+model MpesaEvent {
+  id            Int            @id @default(autoincrement())
+  transactionId Int?           @map("transaction_id")
+  transaction   Transaction?   @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  kind          MpesaEventKind
+  ref           String? // CheckoutRequestID or ConversationID
+  resultCode    Int?           @map("result_code")
+  payload       Json
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  @@index([transactionId])
+  @@index([ref])
+  @@map("mpesa_events")
+}
+
+// Minimal in-app notifications. Module 4 adds real-time push on top of this table.
+model Notification {
+  id            Int              @id @default(autoincrement())
+  userId        Int              @map("user_id")
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          NotificationType
+  title         String
+  body          String
+  transactionId Int?             @map("transaction_id")
+  transaction   Transaction?     @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  readAt        DateTime?        @map("read_at")
+  createdAt     DateTime         @default(now()) @map("created_at")
+
+  @@index([userId, readAt])
+  @@map("notifications")
 }
 
 // ── Module 3 (E2EE messaging) — schema in place, endpoints pending ──
