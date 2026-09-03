@@ -24,7 +24,7 @@ npm install
 
 - **Supabase (hosted Postgres):** from Project Settings → Database → Connection string,
   set `DATABASE_URL` to the transaction pooler URI (port `6543`) with
-  `?pgbouncer=true&connection_limit=1`, and `DIRECT_URL` to the direct/session URI
+  `?pgbouncer=true&connection_limit=5`, and `DIRECT_URL` to the direct/session URI
   (port `5432`). Then run the migrate + seed steps below as normal.
 - **Your own connection string:** edit `DATABASE_URL` (and `DIRECT_URL`) in `.env`.
 
@@ -51,6 +51,11 @@ Health check: `GET http://localhost:4000/api/health`
 | `OTP_DEV_ECHO` | `true` returns the OTP in the API response — **dev only** |
 | `OTP_TTL_MINUTES` / `OTP_MAX_ATTEMPTS` | OTP expiry and wrong-guess limit |
 | `AT_USERNAME` / `AT_API_KEY` / `AT_SENDER_ID` | Africa's Talking creds |
+| `MPESA_MODE` | `mock` (default — simulates STK/B2C callbacks, no network), `sandbox`, or `production` |
+| `PLATFORM_FEE_RATE` | Commission added on top of the listing price (`0.10` = 10%) |
+| `MPESA_CALLBACK_SECRET` | Unguessable path segment on the webhook routes |
+| `SELF_BASE_URL` | Public URL of this API (for callback URLs; ngrok in sandbox) |
+| `MPESA_CONSUMER_KEY` … `MPESA_SECURITY_CREDENTIAL` | Daraja creds — only for `sandbox` / `production` |
 
 ## API — Module 1
 
@@ -85,6 +90,32 @@ Phone numbers accept `0712345678`, `712345678`, `254712…`, `+254712…`.
 | POST | `/` | verified | Create — `categoryType(DIGITAL\|PHYSICAL), category, title, description, price, location?` |
 | PATCH | `/:id` | verified, owner | Update fields or `status(ACTIVE\|PAUSED\|HIRED)` |
 | DELETE | `/:id` | verified, owner | Remove |
+
+### Escrow — HustleGuard  `/api/transactions`
+
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| GET | `/quote?listingId=` | yes | Fee + platform-fee + total breakdown |
+| POST | `/` | verified | Hire a listing — `{ listingId, phone? }`. Opens escrow, fires the STK Push |
+| GET | `/` | yes | Your orders. Query: `role=client\|provider\|all`, `status`, `page`, `pageSize` |
+| GET | `/:id` | participant | One order with full escrow state |
+| POST | `/:id/approve` | client | Approve delivery → B2C payout to the provider |
+| POST | `/:id/decline` | provider | Decline the job → B2C refund to the client |
+| POST | `/:id/cancel` | client | Cancel before payment completes |
+
+### M-Pesa webhooks (called by Safaricom)  `/api/mpesa`
+
+`POST /stk-callback/:secret`, `POST /b2c/result/:secret`, `POST /b2c/timeout/:secret`
+— `:secret` must equal `MPESA_CALLBACK_SECRET`. In `mock` mode the built-in
+simulator calls these itself after `MPESA_MOCK_DELAY_MS`. A client phone ending
+`0000` simulates a cancelled STK Push.
+
+### Notifications  `/api/notifications`
+
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| GET | `/` | yes | Recent notifications + `unreadCount` |
+| POST | `/read` | yes | Mark read — `{ ids? }` (omit to mark all) |
 
 See `requests.http` for ready-to-run examples (VS Code REST Client / IntelliJ HTTP).
 

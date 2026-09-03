@@ -14,11 +14,11 @@ Built Agile, in monthly increments (see proposal section 1.6):
 
 | Module | Objective | State |
 | --- | --- | --- |
-| 1. User Authentication & Profiles | Month 1 | **In progress** — registration, OTP phone verification, public-key setup |
-| 1. Listings & Discovery | Month 1 | **In progress** — post / browse / search digital & physical listings |
-| 2. HustleGuard Escrow & Payments | Month 2 | Schema in place; endpoints pending |
+| 1. User Authentication & Profiles | Month 1 | **Done** — registration, OTP phone verification, public-key setup |
+| 1. Listings & Discovery | Month 1 | **Done** — post / browse / search digital & physical listings |
+| 2. HustleGuard Escrow & Payments | Month 2 | **Done** — M-Pesa STK Push deposit → escrow → B2C payout / refund (mock + sandbox + production modes) |
 | 3. Secure Messaging (E2EE) | Month 3 | Schema in place; endpoints pending |
-| 4. Notifications | Month 3 | Pending |
+| 4. Notifications | Month 3 | In-app notifications live (Module 2); real-time push pending |
 
 ## Architecture (this phase)
 

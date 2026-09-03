@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { CategoryBadge, StatusBadge, KES } from '../components/ListingCard.jsx';
+import { CategoryBadge, StatusBadge } from '../components/ListingCard.jsx';
+import { KES } from '../lib/format.js';
 
 export default function ListingDetail() {
   const { id } = useParams();
@@ -74,25 +75,128 @@ export default function ListingDetail() {
             </button>
           </div>
         ) : (
-          <div className="stack">
-            <button
-              className="btn btn-primary"
-              disabled
-              title="HustleGuard escrow checkout arrives in Module 2"
-            >
-              Hire &amp; pay to escrow — coming soon
-            </button>
-            <p className="hint" style={{ marginTop: 0 }}>
-              Module 2 adds the M-Pesa STK Push checkout and the encrypted chat thread with
-              this provider.
-            </p>
-            {!user && (
-              <p className="muted" style={{ fontSize: '0.9rem' }}>
-                <Link to="/login">Sign in</Link> to hire once checkout is live.
-              </p>
-            )}
-          </div>
+          <HirePanel listing={listing} user={user} />
         )}
+      </div>
+    </div>
+  );
+}
+
+function HirePanel({ listing, user }) {
+  const navigate = useNavigate();
+  const [quote, setQuote] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [phone, setPhone] = useState(user?.phoneNumber || '');
+  const [phoneEdited, setPhoneEdited] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Pre-fill the phone once the profile arrives (if the user hasn't typed).
+  useEffect(() => {
+    if (user?.phoneNumber && !phoneEdited) setPhone(user.phoneNumber);
+  }, [user?.phoneNumber, phoneEdited]);
+
+  useEffect(() => {
+    if (!open || quote) return;
+    api
+      .get(`/transactions/quote?listingId=${listing.id}`)
+      .then(setQuote)
+      .catch((err) => setError(err instanceof ApiError ? err.message : 'Could not get a quote'));
+  }, [open, quote, listing.id]);
+
+  if (!user) {
+    return (
+      <p className="muted" style={{ fontSize: '0.9rem' }}>
+        <Link to="/login">Sign in</Link> to hire this and pay into M-Pesa escrow.
+      </p>
+    );
+  }
+
+  if (!user.phoneVerified) {
+    return (
+      <p className="muted" style={{ fontSize: '0.9rem' }}>
+        <Link to="/verify">Verify your phone number</Link> to hire — it's the number M-Pesa
+        will charge.
+      </p>
+    );
+  }
+
+  if (!open) {
+    return (
+      <div className="stack">
+        <button className="btn btn-primary" onClick={() => setOpen(true)}>
+          Hire &amp; pay to escrow
+        </button>
+        <p className="hint" style={{ marginTop: 0 }}>
+          Your payment is held by HustleGuard and only released to the provider once you
+          approve delivery.
+        </p>
+      </div>
+    );
+  }
+
+  const submit = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const { transaction } = await api.post('/transactions', { listingId: listing.id, phone });
+      navigate(`/orders/${transaction.id}`);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not start the payment');
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="card stack" style={{ background: 'var(--cc-bg)', boxShadow: 'none' }}>
+      <h3 style={{ margin: 0 }}>Hire &amp; pay to escrow</h3>
+
+      {quote ? (
+        <div>
+          <div className="row-between" style={{ padding: '2px 0' }}>
+            <span>Provider fee</span>
+            <span>{KES.format(quote.feeAmount)}</span>
+          </div>
+          <div className="row-between" style={{ padding: '2px 0' }}>
+            <span>Platform fee ({quote.feeRatePct}%)</span>
+            <span>{KES.format(quote.platformFee)}</span>
+          </div>
+          <div
+            className="row-between"
+            style={{ padding: '6px 0 0', fontWeight: 800, color: 'var(--cc-ink)' }}
+          >
+            <span>You pay now</span>
+            <span>{KES.format(quote.amount)}</span>
+          </div>
+        </div>
+      ) : (
+        <p className="muted" style={{ margin: 0 }}>Getting a quote…</p>
+      )}
+
+      <div className="field" style={{ marginBottom: 0 }}>
+        <label htmlFor="hirephone">M-Pesa number to charge</label>
+        <input
+          id="hirephone"
+          className="input"
+          value={phone}
+          onChange={(e) => {
+            setPhone(e.target.value);
+            setPhoneEdited(true);
+          }}
+          inputMode="tel"
+        />
+        <p className="hint">You'll get an STK Push prompt — enter your PIN to pay into escrow.</p>
+      </div>
+
+      {error && <p className="error-text">{error}</p>}
+
+      <div className="row">
+        <button className="btn btn-primary" onClick={submit} disabled={busy || !quote}>
+          {busy ? 'Sending prompt…' : `Send M-Pesa prompt`}
+        </button>
+        <button className="btn btn-ghost" onClick={() => setOpen(false)} disabled={busy}>
+          Cancel
+        </button>
       </div>
     </div>
   );

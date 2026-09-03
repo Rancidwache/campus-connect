@@ -10,6 +10,9 @@ import ListingDetail from './pages/ListingDetail.jsx';
 import ListingForm from './pages/ListingForm.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Profile from './pages/Profile.jsx';
+import Orders from './pages/Orders.jsx';
+import OrderDetail from './pages/OrderDetail.jsx';
+import Notifications from './pages/Notifications.jsx';
 
 export default function App() {
   return (
@@ -24,6 +27,9 @@ export default function App() {
         <Route path="listings/:id" element={<ListingDetail />} />
         <Route path="listings/:id/edit" element={<ProtectedRoute><ListingForm mode="edit" /></ProtectedRoute>} />
         <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+        <Route path="orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
+        <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

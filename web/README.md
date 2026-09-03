@@ -37,12 +37,17 @@ src/
     Browse, ListingDetail, ListingForm (create/edit), Dashboard, Profile
 ```
 
-## What works now (Module 1)
+## What works now (Modules 1–2)
 
 - Register → SMS OTP verify → signed in (JWT).
 - Profile editing and **encrypted-chat key setup** (private key kept on device).
 - Browse / search / filter / sort / paginate listings (public).
 - Create, edit, pause and delete your own listings (verified users).
+- **Hire & pay to escrow** — fee breakdown, M-Pesa STK Push, then an order page
+  that polls the escrow status through `Funds Secured → Released`.
+- **Orders** — buyer / seller views with escrow-status badges; **Approve delivery**
+  (client) and **Decline & refund** (provider).
+- **Alerts** — in-app notifications with an unread count in the nav.
 
-The listing detail page has a disabled "Hire & pay to escrow" button — that flow
-lands in Module 2 with the M-Pesa STK Push checkout.
+Extra pages: `Orders`, `OrderDetail`, `Notifications`. Components: `EscrowBadge`.
+Context: `NotificationsContext` (polls every 25s).

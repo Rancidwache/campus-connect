@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-
-const KES = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 });
+import { KES } from '../lib/format.js';
 
 export function CategoryBadge({ type }) {
   const digital = type === 'DIGITAL';
@@ -42,5 +41,3 @@ export default function ListingCard({ listing }) {
     </Link>
   );
 }
-
-export { KES };

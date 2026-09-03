@@ -144,6 +144,9 @@ p { margin: 0 0 var(--cc-s3); }
 .badge-digital { background: var(--cc-info-bg); color: var(--cc-info); }
 .badge-physical { background: var(--cc-warn-bg); color: var(--cc-warn); }
 .badge-ok { background: var(--cc-ok-bg); color: var(--cc-ok); }
+.badge-info { background: var(--cc-info-bg); color: var(--cc-info); }
+.badge-warn { background: var(--cc-warn-bg); color: var(--cc-warn); }
+.badge-danger { background: var(--cc-danger-bg); color: var(--cc-danger); }
 .badge-muted { background: #f1f5f9; color: var(--cc-muted); }
 
 /* Utility */

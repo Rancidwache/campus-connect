@@ -47,7 +47,7 @@ Operational companion table (not in the proposal ERD, needed for verification):
 | | `delivered_at` | DateTime? | |
 | | `created_at` | DateTime | |
 
-## Transactions  *(Module 2 — schema only for now)*
+## Transactions  *(Module 2 — HustleGuard escrow)*
 
 | Key | Field | Type | Notes |
 | --- | --- | --- | --- |
@@ -55,11 +55,35 @@ Operational companion table (not in the proposal ERD, needed for verification):
 | FK | `listing_id` | Int | → Listings |
 | FK | `client_id` | Int | Paying client → Users |
 | FK | `provider_id` | Int | Payee → Users |
-| | `amount` | Decimal | Total held / released (fee + deposit) |
-| | `escrow_status` | Enum | `HELD` \| `RELEASED` \| `REFUNDED` |
-| | `mpesa_checkout_id` | String? | STK Push `CheckoutRequestID` |
-| | `mpesa_receipt` | String? | Daraja confirmation receipt |
+| | `currency` | String | `KES` |
+| | `fee_amount` | Decimal | The provider's payout (listing price at hire time) |
+| | `platform_fee` | Decimal | Campus Connect commission (`PLATFORM_FEE_RATE`) |
+| | `amount` | Decimal | Total charged to the client = fee + platform_fee |
+| | `escrow_status` | Enum | `PENDING_PAYMENT` → `HELD` → `RELEASING` → `RELEASED`; also `PAYMENT_FAILED`, `REFUNDING` → `REFUNDED`, `CANCELLED`. The proposal ERD names the three resting states (Held / Released / Refunded). |
+| | `client_phone` / `provider_phone` | String | E.164 snapshots — STK Push and B2C targets |
+| | `stk_checkout_request_id` | String? unique | Daraja STK `CheckoutRequestID` |
+| | `stk_merchant_request_id` | String? | Daraja STK `MerchantRequestID` |
+| | `stk_result_code` / `stk_result_desc` | Int? / String? | STK callback outcome |
+| | `mpesa_receipt` | String? | Deposit confirmation receipt |
+| | `b2c_conversation_id` | String? unique | Daraja B2C `ConversationID` |
+| | `b2c_result_code` / `b2c_result_desc` | Int? / String? | B2C result outcome |
+| | `b2c_receipt` | String? | Payout / refund receipt |
+| | `paid_at` / `released_at` / `refunded_at` | DateTime? | Lifecycle timestamps |
 | | `created_at` / `updated_at` | DateTime | |
+
+### MpesaEvent  *(audit log — not in the proposal ERD)*
+
+Every Daraja request and callback, stored raw for idempotency and debugging:
+`id`, `transaction_id?` (FK), `kind` (`STK_PUSH_REQUEST` \| `STK_CALLBACK` \|
+`B2C_REQUEST` \| `B2C_RESULT` \| `B2C_TIMEOUT`), `ref` (checkout / conversation id),
+`result_code?`, `payload` (JSON), `created_at`.
+
+### Notification  *(Module 2 / 4)*
+
+`id`, `user_id` (FK), `type` (`ESCROW_FUNDED` \| `PAYMENT_FAILED` \|
+`DELIVERY_APPROVED` \| `ESCROW_RELEASED` \| `ESCROW_REFUNDED` \| `JOB_DECLINED`),
+`title`, `body`, `transaction_id?` (FK), `read_at?`, `created_at`. Module 4 adds
+real-time push over WebSocket on top of this table.
 
 ## Relationships
 

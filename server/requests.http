@@ -69,3 +69,44 @@ Content-Type: application/json
   "price": 12000,
   "location": "Online"
 }
+
+########################################################################
+# Module 2 — HustleGuard escrow  (MPESA_MODE=mock)
+########################################################################
+
+### Quote for a listing (as the client, seeded user 1)
+GET {{base}}/transactions/quote?listingId=3
+Authorization: Bearer {{token}}
+
+### Hire listing 3 -> opens escrow + fires the (mock) STK Push
+# @name hire
+POST {{base}}/transactions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "listingId": 3 }
+
+@txId = {{hire.response.body.transaction.id}}
+
+### Poll the order — flips to HELD ~3s after hire (mock STK callback)
+GET {{base}}/transactions/{{txId}}
+Authorization: Bearer {{token}}
+
+### Approve delivery -> B2C payout -> RELEASED
+POST {{base}}/transactions/{{txId}}/approve
+Authorization: Bearer {{token}}
+
+### My orders (as client)
+GET {{base}}/transactions?role=client
+Authorization: Bearer {{token}}
+
+### Notifications
+GET {{base}}/notifications
+Authorization: Bearer {{token}}
+
+### Simulate a cancelled STK Push: client phone ending 0000 -> PAYMENT_FAILED
+POST {{base}}/transactions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "listingId": 4, "phone": "0700000000" }
