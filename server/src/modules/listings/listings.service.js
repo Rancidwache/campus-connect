@@ -2,6 +2,17 @@ import { prisma } from '../../lib/prisma.js';
 import { forbidden, notFound } from '../../lib/errors.js';
 import { storage } from '../../lib/storage.js';
 
+// Mark which of these listings the given user has saved.
+async function withFavorited(listings, userId) {
+  if (!userId || listings.length === 0) return listings;
+  const favs = await prisma.favorite.findMany({
+    where: { userId, listingId: { in: listings.map((l) => l.id) } },
+    select: { listingId: true },
+  });
+  const set = new Set(favs.map((f) => f.listingId));
+  return listings.map((l) => ({ ...l, favorited: set.has(l.id) }));
+}
+
 const OWNER_SELECT = {
   id: true,
   fullName: true,
@@ -50,6 +61,7 @@ export async function listListings(query, currentUserId) {
     q,
     categoryType,
     category,
+    location,
     minPrice,
     maxPrice,
     mine,
@@ -69,6 +81,7 @@ export async function listListings(query, currentUserId) {
 
   if (categoryType) where.categoryType = categoryType;
   if (category) where.category = { equals: category, mode: 'insensitive' };
+  if (location) where.location = { contains: location, mode: 'insensitive' };
 
   if (minPrice !== undefined || maxPrice !== undefined) {
     where.price = {};
@@ -104,7 +117,7 @@ export async function listListings(query, currentUserId) {
   ]);
 
   return {
-    data: rows.map(serialize),
+    data: await withFavorited(rows.map(serialize), currentUserId),
     pagination: {
       page,
       pageSize,
@@ -114,13 +127,59 @@ export async function listListings(query, currentUserId) {
   };
 }
 
-export async function getListing(id) {
+export async function getListing(id, currentUserId) {
   const listing = await prisma.listing.findUnique({
     where: { id },
     include: LISTING_INCLUDE,
   });
   if (!listing) throw notFound('Listing not found');
-  return serialize(listing);
+  const [decorated] = await withFavorited([serialize(listing)], currentUserId);
+  return decorated;
+}
+
+// Distinct active categories with counts, curated names first.
+export async function listCategories() {
+  const rows = await prisma.listing.groupBy({
+    by: ['category'],
+    where: { status: 'ACTIVE' },
+    _count: true,
+  });
+  return rows
+    .map((r) => ({ category: r.category, count: r._count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+// ── favourites ────────────────────────────────────────────────────────────
+export async function toggleFavorite(userId, listingId) {
+  const listing = await prisma.listing.findUnique({ where: { id: listingId }, select: { id: true } });
+  if (!listing) throw notFound('Listing not found');
+  const key = { userId_listingId: { userId, listingId } };
+  const existing = await prisma.favorite.findUnique({ where: key });
+  if (existing) {
+    await prisma.favorite.delete({ where: key });
+    return { favorited: false };
+  }
+  await prisma.favorite.create({ data: { userId, listingId } });
+  return { favorited: true };
+}
+
+export async function listSaved(userId, { page, pageSize }) {
+  const where = { userId };
+  const [total, favs] = await prisma.$transaction([
+    prisma.favorite.count({ where }),
+    prisma.favorite.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: { listing: { include: LISTING_INCLUDE } },
+    }),
+  ]);
+  const data = favs.map((f) => ({ ...serialize(f.listing), favorited: true }));
+  return {
+    data,
+    pagination: { page, pageSize, total, totalPages: Math.max(1, Math.ceil(total / pageSize)) },
+  };
 }
 
 async function loadOwned(id, userId) {

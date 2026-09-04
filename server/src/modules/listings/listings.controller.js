@@ -13,7 +13,19 @@ export const list = asyncHandler(async (req, res) => {
 });
 
 export const getOne = asyncHandler(async (req, res) => {
-  res.json({ listing: await listingsService.getListing(req.params.id) });
+  res.json({ listing: await listingsService.getListing(req.params.id, req.user?.id) });
+});
+
+export const categories = asyncHandler(async (_req, res) => {
+  res.json({ categories: await listingsService.listCategories() });
+});
+
+export const saved = asyncHandler(async (req, res) => {
+  res.json(await listingsService.listSaved(req.user.id, req.query));
+});
+
+export const toggleFavorite = asyncHandler(async (req, res) => {
+  res.json(await listingsService.toggleFavorite(req.user.id, req.params.id));
 });
 
 export const update = asyncHandler(async (req, res) => {

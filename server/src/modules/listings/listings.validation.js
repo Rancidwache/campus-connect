@@ -25,6 +25,7 @@ export const listQuerySchema = {
     q: z.string().trim().max(120).optional(),
     categoryType: z.enum(CATEGORY_TYPES).optional(),
     category: z.string().max(60).optional(),
+    location: z.string().trim().max(120).optional(),
     minPrice: z.coerce.number().nonnegative().optional(),
     maxPrice: z.coerce.number().positive().optional(),
     mine: z.coerce.boolean().optional(),

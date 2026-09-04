@@ -98,6 +98,7 @@ model User {
   reviewReplies          ReviewReply[]
   reviewLikes            ReviewLike[]
   replyLikes             ReplyLike[]
+  favorites              Favorite[]
 
   @@map("users")
 }
@@ -133,10 +134,25 @@ model Listing {
 
   transactions Transaction[]
   media        ListingMedia[]
+  favorites    Favorite[]
 
   @@index([categoryType, status])
   @@index([createdAt])
+  @@index([category])
   @@map("listings")
+}
+
+// Saved / favourited listings.
+model Favorite {
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId Int      @map("listing_id")
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([userId, listingId])
+  @@index([userId])
+  @@map("favorites")
 }
 
 // Up to 5 images + one short video per listing. Files live in object storage

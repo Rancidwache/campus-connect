@@ -15,9 +15,21 @@ import {
 
 const router = Router();
 
+const pageQuery = {
+  query: z.object({
+    page: z.coerce.number().int().positive().default(1),
+    pageSize: z.coerce.number().int().positive().max(50).default(20),
+  }),
+};
+
 // Public browse / search. Signed-in users may also pass ?mine=true.
 router.get('/', requireAuthOptional, validate(listQuerySchema), ctrl.list);
-router.get('/:id', validate(idParamSchema), ctrl.getOne);
+
+// Specific routes before the /:id catch-all.
+router.get('/categories', ctrl.categories);
+router.get('/saved', requireAuth, validate(pageQuery), ctrl.saved);
+
+router.get('/:id', requireAuthOptional, validate(idParamSchema), ctrl.getOne);
 
 // Posting or changing a listing requires a verified account.
 router.post(
@@ -37,6 +49,9 @@ router.patch(
   ctrl.update,
 );
 router.delete('/:id', requireAuth, requireVerified, validate(idParamSchema), ctrl.remove);
+
+// Save / unsave a listing (any signed-in user).
+router.post('/:id/favorite', requireAuth, validate(idParamSchema), ctrl.toggleFavorite);
 
 // ── Media (images + one short video) — owner + verified ──
 router.post(
