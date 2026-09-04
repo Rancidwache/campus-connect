@@ -24,6 +24,7 @@ enum ListingStatus {
   ACTIVE
   PAUSED
   HIRED
+  REMOVED // soft-deleted (kept so transaction history stays intact)
 }
 
 enum OtpPurpose {
@@ -68,12 +69,37 @@ enum MediaKind {
   VIDEO
 }
 
+enum ReportTargetType {
+  LISTING
+  REVIEW
+  REVIEW_REPLY
+  USER
+}
+
+enum ReportReason {
+  SPAM
+  SCAM_OR_FRAUD
+  PROHIBITED_ITEM
+  HARASSMENT_OR_HATE
+  OFF_PLATFORM_PAYMENT
+  MISLEADING
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  ACTIONED
+  DISMISSED
+}
+
 model User {
   id            Int      @id @default(autoincrement()) @map("user_id")
   fullName      String   @map("full_name")
   phoneNumber   String   @unique @map("phone_number")
   passwordHash  String   @map("password_hash")
   phoneVerified Boolean  @default(false) @map("phone_verified")
+  isAdmin       Boolean  @default(false) @map("is_admin")
   publicKey     String?  @map("public_key")
   bio           String?
   avatarUrl     String?  @map("avatar_url")
@@ -99,6 +125,8 @@ model User {
   reviewLikes            ReviewLike[]
   replyLikes             ReplyLike[]
   favorites              Favorite[]
+  reportsFiled            Report[]       @relation("ReportsByReporter")
+  reportsHandled          Report[]       @relation("ReportsByModerator")
 
   @@map("users")
 }
@@ -328,4 +356,26 @@ model ReplyLike {
 
   @@id([replyId, userId])
   @@map("reply_likes")
+}
+
+// ── Phase 4 — reporting & moderation ──
+model Report {
+  id           Int              @id @default(autoincrement())
+  reporterId   Int              @map("reporter_id")
+  reporter     User             @relation("ReportsByReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetType   ReportTargetType @map("target_type")
+  targetId     Int              @map("target_id")
+  reason       ReportReason
+  detail       String?
+  status       ReportStatus     @default(OPEN)
+  reviewedById Int?             @map("reviewed_by_id")
+  reviewedBy   User?            @relation("ReportsByModerator", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNote   String?          @map("review_note")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  @@unique([reporterId, targetType, targetId])
+  @@index([status])
+  @@index([targetType, targetId])
+  @@map("reports")
 }

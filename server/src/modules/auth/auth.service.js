@@ -10,6 +10,7 @@ const PUBLIC_USER = {
   fullName: true,
   phoneNumber: true,
   phoneVerified: true,
+  isAdmin: true,
   publicKey: true,
   createdAt: true,
 };
@@ -77,6 +78,7 @@ function pick(user) {
     fullName: user.fullName,
     phoneNumber: user.phoneNumber,
     phoneVerified: user.phoneVerified,
+    isAdmin: user.isAdmin,
     publicKey: user.publicKey,
     createdAt: user.createdAt,
   };

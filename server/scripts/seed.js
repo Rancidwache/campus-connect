@@ -76,10 +76,12 @@ async function main() {
   const passwordHash = await bcrypt.hash('Password123', 12);
 
   for (const u of USERS) {
+    // First seed user doubles as the demo moderator.
+    const isAdmin = u.phoneNumber === USERS[0].phoneNumber;
     await prisma.user.upsert({
       where: { phoneNumber: u.phoneNumber },
-      update: {},
-      create: { ...u, passwordHash, phoneVerified: true },
+      update: { isAdmin },
+      create: { ...u, passwordHash, phoneVerified: true, isAdmin },
     });
   }
 

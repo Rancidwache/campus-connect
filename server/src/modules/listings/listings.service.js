@@ -132,7 +132,7 @@ export async function getListing(id, currentUserId) {
     where: { id },
     include: LISTING_INCLUDE,
   });
-  if (!listing) throw notFound('Listing not found');
+  if (!listing || listing.status === 'REMOVED') throw notFound('This listing is no longer available');
   const [decorated] = await withFavorited([serialize(listing)], currentUserId);
   return decorated;
 }
@@ -207,9 +207,18 @@ export async function updateListing(id, userId, input) {
   return serialize(listing);
 }
 
+// Soft-delete: keep the row so linked transactions stay intact; drop the media.
 export async function deleteListing(id, userId) {
   await loadOwned(id, userId);
+  await removeListing(id);
+}
+
+export async function removeListing(id) {
   const media = await prisma.listingMedia.findMany({ where: { listingId: id }, select: { storageKey: true } });
-  await prisma.listing.delete({ where: { id } }); // media rows cascade
+  await prisma.$transaction([
+    prisma.listingMedia.deleteMany({ where: { listingId: id } }),
+    prisma.favorite.deleteMany({ where: { listingId: id } }),
+    prisma.listing.update({ where: { id }, data: { status: 'REMOVED' } }),
+  ]);
   for (const m of media) storage.remove(m.storageKey);
 }

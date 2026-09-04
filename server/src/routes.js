@@ -8,6 +8,7 @@ import mpesaRoutes from './modules/payments/mpesa.routes.js';
 import notificationsRoutes from './modules/notifications/notifications.routes.js';
 import messagesRoutes from './modules/messages/messages.routes.js';
 import reviewsRoutes from './modules/reviews/reviews.routes.js';
+import { reportsRouter, adminReportsRouter } from './modules/reports/reports.routes.js';
 
 const api = Router();
 
@@ -23,5 +24,7 @@ api.use('/mpesa', mpesaRoutes); // Safaricom Daraja callbacks
 api.use('/notifications', notificationsRoutes);
 api.use('/messages', messagesRoutes); // Module 3 — E2EE messaging (blind relay)
 api.use('/reviews', reviewsRoutes); // Phase 2 — ratings & reviews
+api.use('/reports', reportsRouter); // Phase 4 — reporting
+api.use('/admin/reports', adminReportsRouter); // Phase 4 — moderation queue
 
 export default api;

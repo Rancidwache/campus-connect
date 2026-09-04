@@ -7,6 +7,7 @@ const PUBLIC_PROFILE = {
   fullName: true,
   phoneNumber: true,
   phoneVerified: true,
+  isAdmin: true,
   publicKey: true,
   bio: true,
   avatarUrl: true,

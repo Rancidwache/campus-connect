@@ -1,6 +1,6 @@
 import { verifyAccessToken } from '../lib/jwt.js';
 import { prisma } from '../lib/prisma.js';
-import { unauthorized } from '../lib/errors.js';
+import { forbidden, unauthorized } from '../lib/errors.js';
 import { asyncHandler } from './asyncHandler.js';
 
 // Require a valid Bearer token. Attaches req.user (the full User row minus hash).
@@ -49,6 +49,15 @@ export const requireAuthOptional = asyncHandler(async (req, _res, next) => {
 export const requireVerified = (req, _res, next) => {
   if (!req.user?.phoneVerified) {
     next(unauthorized('Verify your phone number to continue'));
+    return;
+  }
+  next();
+};
+
+// Require a moderator account.
+export const requireAdmin = (req, _res, next) => {
+  if (!req.user?.isAdmin) {
+    next(forbidden('Moderator access only'));
     return;
   }
   next();

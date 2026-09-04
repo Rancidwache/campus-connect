@@ -10,7 +10,7 @@ const CUSTOMER_STATES = ['HELD', 'RELEASING', 'RELEASED', 'REFUNDING', 'REFUNDED
 const AUTHOR_SELECT = { id: true, fullName: true, avatarUrl: true };
 
 // ── rating rollup ──────────────────────────────────────────────────────────
-async function recomputeRating(providerId) {
+export async function recomputeProviderRating(providerId) {
   const agg = await prisma.review.aggregate({
     where: { providerId },
     _avg: { rating: true },
@@ -58,7 +58,7 @@ export async function createReview(authorId, { transactionId, rating, body }) {
   const review = await prisma.review.create({
     data: { providerId: tx.providerId, authorId, transactionId, rating, body: body.trim() },
   });
-  await recomputeRating(tx.providerId);
+  await recomputeProviderRating(tx.providerId);
 
   const author = await prisma.user.findUnique({ where: { id: authorId }, select: { fullName: true } });
   await notify(
@@ -84,7 +84,7 @@ export async function updateReview(authorId, id, { rating, body }) {
       ...(body !== undefined ? { body: body.trim() } : {}),
     },
   });
-  if (rating !== undefined) await recomputeRating(review.providerId);
+  if (rating !== undefined) await recomputeProviderRating(review.providerId);
   return getReview(updated.id, authorId);
 }
 
@@ -93,7 +93,7 @@ export async function deleteReview(authorId, id) {
   if (!review) throw notFound('Review not found');
   if (review.authorId !== authorId) throw forbidden('Not your review');
   await prisma.review.delete({ where: { id } });
-  await recomputeRating(review.providerId);
+  await recomputeProviderRating(review.providerId);
 }
 
 // ── replies ───────────────────────────────────────────────────────────────
