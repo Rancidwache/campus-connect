@@ -75,7 +75,14 @@ export default function ListingDetail() {
             </button>
           </div>
         ) : (
-          <HirePanel listing={listing} user={user} />
+          <div className="stack">
+            <HirePanel listing={listing} user={user} />
+            {user && listing.owner?.id && (
+              <Link to={`/messages/${listing.owner.id}`} className="btn btn-ghost">
+                Message {listing.owner.fullName.split(' ')[0]} first
+              </Link>
+            )}
+          </div>
         )}
       </div>
     </div>

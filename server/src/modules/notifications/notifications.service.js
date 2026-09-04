@@ -1,10 +1,14 @@
 import { prisma } from '../../lib/prisma.js';
+import { emitToUser } from '../../realtime/emit.js';
 
-// Create an in-app notification. Module 4 will also push these over WebSocket.
-export function notify(userId, type, title, body, transactionId = null) {
-  return prisma.notification.create({
+// Create an in-app notification and push it to the user in real time if they
+// have a socket connected (falls back to the 25s poll otherwise).
+export async function notify(userId, type, title, body, transactionId = null) {
+  const notification = await prisma.notification.create({
     data: { userId, type, title, body, transactionId },
   });
+  emitToUser(userId, 'notification:new', notification);
+  return notification;
 }
 
 export async function listForUser(userId, { limit = 30 } = {}) {

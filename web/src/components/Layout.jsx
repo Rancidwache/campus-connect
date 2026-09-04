@@ -1,10 +1,31 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useNotifications } from '../context/NotificationsContext.jsx';
+import { useChat } from '../context/ChatContext.jsx';
+
+function Count({ n }) {
+  if (!n) return null;
+  return (
+    <span
+      style={{
+        marginLeft: 4,
+        background: 'var(--cc-teal-700)',
+        color: '#fff',
+        borderRadius: 999,
+        fontSize: '0.7rem',
+        fontWeight: 700,
+        padding: '1px 6px',
+      }}
+    >
+      {n}
+    </span>
+  );
+}
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
+  const { unread: chatUnread } = useChat();
   const navigate = useNavigate();
 
   const onLogout = () => {
@@ -34,23 +55,13 @@ export default function Layout() {
                 <NavLink to="/orders" style={navStyle}>
                   Orders
                 </NavLink>
+                <NavLink to="/messages" style={navStyle}>
+                  Chat
+                  <Count n={chatUnread} />
+                </NavLink>
                 <NavLink to="/notifications" style={navStyle}>
                   Alerts
-                  {unreadCount > 0 && (
-                    <span
-                      style={{
-                        marginLeft: 4,
-                        background: 'var(--cc-teal-700)',
-                        color: '#fff',
-                        borderRadius: 999,
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        padding: '1px 6px',
-                      }}
-                    >
-                      {unreadCount}
-                    </span>
-                  )}
+                  <Count n={unreadCount} />
                 </NavLink>
                 <NavLink to="/profile" style={navStyle}>
                   {user.fullName.split(' ')[0]}

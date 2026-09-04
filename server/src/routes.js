@@ -6,6 +6,7 @@ import listingsRoutes from './modules/listings/listings.routes.js';
 import escrowRoutes from './modules/payments/escrow.routes.js';
 import mpesaRoutes from './modules/payments/mpesa.routes.js';
 import notificationsRoutes from './modules/notifications/notifications.routes.js';
+import messagesRoutes from './modules/messages/messages.routes.js';
 
 const api = Router();
 
@@ -19,7 +20,6 @@ api.use('/listings', listingsRoutes);
 api.use('/transactions', escrowRoutes); // Module 2 — HustleGuard escrow
 api.use('/mpesa', mpesaRoutes); // Safaricom Daraja callbacks
 api.use('/notifications', notificationsRoutes);
-
-// Module 3 (E2EE messaging) mounts here in the next phase.
+api.use('/messages', messagesRoutes); // Module 3 — E2EE messaging (blind relay)
 
 export default api;

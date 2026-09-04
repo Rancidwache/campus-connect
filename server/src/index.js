@@ -1,11 +1,16 @@
+import { createServer } from 'node:http';
 import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { prisma } from './lib/prisma.js';
+import { initRealtime } from './realtime/index.js';
 
 const app = createApp();
+const server = createServer(app);
 
-const server = app.listen(env.port, () => {
-  console.log(`Campus Connect V2 API listening on http://localhost:${env.port} (${env.nodeEnv})`);
+initRealtime(server); // Socket.IO for chat + notifications
+
+server.listen(env.port, () => {
+  console.log(`Campus Connect V2 API + realtime on http://localhost:${env.port} (${env.nodeEnv})`);
 });
 
 async function shutdown(signal) {

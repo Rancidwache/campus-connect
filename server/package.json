@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "description": "Campus Connect V2 REST API — Auth, Listings, HustleGuard escrow, E2EE messaging",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
@@ -14,7 +16,9 @@
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset"
   },
-  "prisma": { "seed": "node scripts/seed.js" },
+  "prisma": {
+    "seed": "node scripts/seed.js"
+  },
   "dependencies": {
     "@prisma/client": "^6.2.1",
     "bcryptjs": "^2.4.3",
@@ -25,6 +29,7 @@
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "socket.io": "^4.8.3",
     "zod": "^3.24.1"
   },
   "devDependencies": {

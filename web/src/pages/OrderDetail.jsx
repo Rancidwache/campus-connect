@@ -83,6 +83,14 @@ export default function OrderDetail() {
 
         <p style={{ margin: 0 }}>{escrowHint(tx.escrowStatus, tx.role)}</p>
 
+        <Link
+          to={`/messages/${isClient ? tx.provider.id : tx.client.id}`}
+          className="btn btn-ghost btn-sm"
+          style={{ alignSelf: 'flex-start' }}
+        >
+          💬 Message {(isClient ? tx.provider.fullName : tx.client.fullName).split(' ')[0]}
+        </Link>
+
         <div
           className="card"
           style={{ background: 'var(--cc-bg)', boxShadow: 'none', padding: 'var(--cc-s4)' }}

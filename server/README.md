@@ -117,6 +117,26 @@ simulator calls these itself after `MPESA_MOCK_DELAY_MS`. A client phone ending
 | GET | `/` | yes | Recent notifications + `unreadCount` |
 | POST | `/read` | yes | Mark read — `{ ids? }` (omit to mark all) |
 
+### Messages — E2EE chat  `/api/messages`
+
+The server is a blind relay: `encryptedPayload` is opaque `v1.<iv>.<ciphertext>`
+produced on the client (ECDH P-256 → HKDF → AES-GCM). Both users must have a
+`publicKey` set (`PUT /api/users/me/public-key`).
+
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| GET | `/threads` | yes | Conversation list — peer, unread count, last message |
+| GET | `/thread/:userId` | yes | Messages with a user (`?before=&limit=`); marks received ones delivered |
+| POST | `/` | verified | Send — `{ toUserId, encryptedPayload }` |
+| POST | `/delivered` | yes | Ack messages — `{ messageIds: [] }` |
+| GET | `/unread-count` | yes | `{ unread }` |
+
+### Real-time  (Socket.IO, same origin/port)
+
+Connect with `io(url, { auth: { token } })` — same JWT as REST. Server emits to the
+authenticated user: `message:new`, `message:sent`, `message:delivered`,
+`notification:new`. Client may emit `thread:open { withUserId }`.
+
 See `requests.http` for ready-to-run examples (VS Code REST Client / IntelliJ HTTP).
 
 ## Layout

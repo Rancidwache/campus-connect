@@ -36,16 +36,19 @@ Operational companion table (not in the proposal ERD, needed for verification):
 | | `status` | Enum | `ACTIVE` \| `PAUSED` \| `HIRED` |
 | | `created_at` / `updated_at` | DateTime | |
 
-## Messages  *(Module 3 — schema only for now)*
+## Messages  *(Module 3 — E2EE chat)*
 
 | Key | Field | Type | Notes |
 | --- | --- | --- | --- |
 | PK | `message_id` | Int | Auto-increment |
 | FK | `sender_id` | Int | → Users |
 | FK | `receiver_id` | Int | → Users |
-| | `encrypted_payload` | String | Ciphertext; the server cannot read it |
-| | `delivered_at` | DateTime? | |
+| | `encrypted_payload` | String | `v1.<ivB64>.<ciphertextB64>` — AES-GCM, opaque to the server |
+| | `delivered_at` | DateTime? | Set when the recipient first loads the thread |
 | | `created_at` | DateTime | |
+
+Encryption keys live on `User.public_key` (client-generated ECDH P-256; the private
+key never reaches the server). No schema change was needed for Module 3.
 
 ## Transactions  *(Module 2 — HustleGuard escrow)*
 

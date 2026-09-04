@@ -17,16 +17,20 @@ Built Agile, in monthly increments (see proposal section 1.6):
 | 1. User Authentication & Profiles | Month 1 | **Done** — registration, OTP phone verification, public-key setup |
 | 1. Listings & Discovery | Month 1 | **Done** — post / browse / search digital & physical listings |
 | 2. HustleGuard Escrow & Payments | Month 2 | **Done** — M-Pesa STK Push deposit → escrow → B2C payout / refund (mock + sandbox + production modes) |
-| 3. Secure Messaging (E2EE) | Month 3 | Schema in place; endpoints pending |
-| 4. Notifications | Month 3 | In-app notifications live (Module 2); real-time push pending |
+| 3. Secure Messaging (E2EE) | Month 3 | **Done** — ECDH key exchange + AES-GCM in the browser; server is a blind relay; Socket.IO for live delivery |
+| 4. Notifications | Month 3 | In-app notifications + Socket.IO real-time push; **done** |
 
 ## Architecture (this phase)
 
 ```
 React PWA (web)  ──HTTPS/REST──►  Node/Express API  ──►  PostgreSQL
-     mobile-first, installable         behind Kong API Gateway + WAF
+     mobile-first, installable   ──WebSocket (Socket.IO)──►  (chat + notifications)
+                                       behind Kong API Gateway + WAF
                                        (deployment concern — see docs/architecture.md)
 ```
+
+Chat is end-to-end encrypted **on the client** (ECDH P-256 → HKDF → AES-GCM). The
+API only ever stores and relays the ciphertext string.
 
 The native mobile app is deferred; the responsive PWA covers mobile for now.
 

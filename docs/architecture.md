@@ -63,7 +63,34 @@ into their own deployables without changing their internal interfaces.
 Neither party trusts the other; both trust the escrow mechanism. Sequence diagram:
 proposal Figure 4.5.
 
-## Real-time layer (Month 3 — planned)
+## Secure messaging (Module 3)
 
-A WebSocket layer (Socket.IO) carries encrypted chat payloads and push notifications
-for payment confirmation, new messages, and delivery approval.
+End-to-end encrypted chat between any two users who have both set up a key.
+
+- **Key exchange** — each device generates a long-term ECDH **P-256** key pair on
+  first use (`web/src/lib/e2ee.js`). The private key is kept in `localStorage` as a
+  JWK and never leaves the device; the public key is uploaded via
+  `PUT /api/users/me/public-key`.
+- **Per-conversation key** — `ECDH(my private, their public)` → HKDF-SHA256 →
+  a 256-bit **AES-GCM** key, cached per peer. Each message uses a fresh random
+  12-byte IV. Wire format: `v1.<ivB64>.<ciphertextB64>`.
+- **The server is a blind relay.** `Message.encryptedPayload` is an opaque string.
+  The API validates only its size, stores it, and forwards it. It cannot read chat.
+- This is a static shared key — no Double Ratchet / forward secrecy yet. Noted as
+  future work, matching the proposal's "Signal Protocol-**style**".
+
+## Real-time layer (Module 3 / 4)
+
+A Socket.IO server shares the HTTP server (`src/realtime/`). The handshake is
+authenticated with the same JWT as the REST API; each socket joins a `user:<id>`
+room. Events:
+
+- `message:new` / `message:sent` — a new chat message (ciphertext) to the recipient
+  and the sender's other tabs.
+- `message:delivered` — delivery receipts (fires when the recipient loads the thread
+  or calls `POST /api/messages/delivered`).
+- `notification:new` — escrow / payment notifications, pushed the moment `notify()`
+  writes one (the web client also polls every 25 s as a fallback).
+
+`src/realtime/emit.js` is a one-line indirection (`emitToUser`) so any module can
+push an event without importing the Socket.IO server.

@@ -37,17 +37,21 @@ src/
     Browse, ListingDetail, ListingForm (create/edit), Dashboard, Profile
 ```
 
-## What works now (Modules 1–2)
+## What works now (Modules 1–3)
 
 - Register → SMS OTP verify → signed in (JWT).
-- Profile editing and **encrypted-chat key setup** (private key kept on device).
+- Profile editing and **encrypted-chat key setup** (ECDH key pair; private key
+  kept on device).
 - Browse / search / filter / sort / paginate listings (public).
 - Create, edit, pause and delete your own listings (verified users).
 - **Hire & pay to escrow** — fee breakdown, M-Pesa STK Push, then an order page
   that polls the escrow status through `Funds Secured → Released`.
 - **Orders** — buyer / seller views with escrow-status badges; **Approve delivery**
   (client) and **Decline & refund** (provider).
-- **Alerts** — in-app notifications with an unread count in the nav.
+- **Chat** — end-to-end encrypted threads (`lib/e2ee.js`: ECDH → HKDF → AES-GCM).
+  Live delivery over Socket.IO; message the provider from a listing or an order.
+- **Alerts** — notifications, pushed instantly over the socket (25 s poll fallback).
 
-Extra pages: `Orders`, `OrderDetail`, `Notifications`. Components: `EscrowBadge`.
-Context: `NotificationsContext` (polls every 25s).
+Pages: `Orders`, `OrderDetail`, `Messages`, `Thread`, `Notifications`.
+Components: `EscrowBadge`. Contexts: `RealtimeProvider` (Socket.IO),
+`NotificationsProvider`, `ChatProvider`.

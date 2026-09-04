@@ -1,11 +1,13 @@
 import { createContext, useContext, useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api/client.js';
 import { useAuth } from './AuthContext.jsx';
+import { useRealtime } from './RealtimeContext.jsx';
 
 const Ctx = createContext(null);
 
 export function NotificationsProvider({ children }) {
   const { user } = useAuth();
+  const { on } = useRealtime();
   const [items, setItems] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const timer = useRef(null);
@@ -36,10 +38,19 @@ export function NotificationsProvider({ children }) {
   useEffect(() => {
     refresh();
     if (user) {
+      // Poll as a fallback; the socket delivers new notifications instantly.
       timer.current = setInterval(refresh, 25_000);
       return () => clearInterval(timer.current);
     }
   }, [user, refresh]);
+
+  useEffect(() => {
+    if (!user) return undefined;
+    return on('notification:new', (n) => {
+      setItems((prev) => [n, ...prev.filter((x) => x.id !== n.id)].slice(0, 30));
+      setUnreadCount((c) => c + 1);
+    });
+  }, [user, on]);
 
   return (
     <Ctx.Provider value={{ items, unreadCount, refresh, markRead }}>{children}</Ctx.Provider>
