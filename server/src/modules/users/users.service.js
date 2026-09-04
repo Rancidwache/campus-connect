@@ -11,6 +11,8 @@ const PUBLIC_PROFILE = {
   bio: true,
   avatarUrl: true,
   socials: true,
+  ratingAvg: true,
+  ratingCount: true,
   createdAt: true,
 };
 
@@ -23,6 +25,8 @@ const PUBLIC_VIEW = {
   avatarUrl: true,
   socials: true,
   phoneVerified: true,
+  ratingAvg: true,
+  ratingCount: true,
   createdAt: true,
 };
 

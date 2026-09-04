@@ -59,6 +59,8 @@ enum NotificationType {
   ESCROW_RELEASED
   ESCROW_REFUNDED
   JOB_DECLINED
+  NEW_REVIEW
+  REVIEW_REPLY
 }
 
 enum MediaKind {
@@ -78,6 +80,9 @@ model User {
   avatarKey     String?  @map("avatar_key")
   // { tiktok, instagram, whatsapp, x, facebook, youtube, linkedin, website } — all optional
   socials       Json?
+  // Denormalised rating rollup — recomputed on any review change.
+  ratingAvg     Float    @default(0) @map("rating_avg")
+  ratingCount   Int      @default(0) @map("rating_count")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
@@ -88,6 +93,11 @@ model User {
   messagesSent           Message[]      @relation("SentMessages")
   messagesReceived       Message[]      @relation("ReceivedMessages")
   notifications          Notification[]
+  reviewsReceived        Review[]       @relation("ReviewsAboutProvider")
+  reviewsWritten         Review[]       @relation("ReviewsByAuthor")
+  reviewReplies          ReviewReply[]
+  reviewLikes            ReviewLike[]
+  replyLikes             ReplyLike[]
 
   @@map("users")
 }
@@ -185,6 +195,7 @@ model Transaction {
 
   events        MpesaEvent[]
   notifications Notification[]
+  review        Review?
 
   @@index([clientId])
   @@index([providerId])
@@ -238,4 +249,67 @@ model Message {
 
   @@index([senderId, receiverId])
   @@map("messages")
+}
+
+// ── Phase 2 — ratings & reviews (threaded, likeable) ──
+// One review per completed transaction; it is about the provider.
+model Review {
+  id            Int      @id @default(autoincrement())
+  providerId    Int      @map("provider_id")
+  provider      User     @relation("ReviewsAboutProvider", fields: [providerId], references: [id], onDelete: Cascade)
+  authorId      Int      @map("author_id")
+  author        User     @relation("ReviewsByAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  transactionId Int      @unique @map("transaction_id")
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  rating        Int // 1..5
+  body          String
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  replies ReviewReply[]
+  likes   ReviewLike[]
+
+  @@index([providerId])
+  @@map("reviews")
+}
+
+model ReviewReply {
+  id            Int      @id @default(autoincrement())
+  reviewId      Int      @map("review_id")
+  review        Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  authorId      Int      @map("author_id")
+  author        User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentReplyId Int?     @map("parent_reply_id")
+  parentReply   ReviewReply?  @relation("ReplyThread", fields: [parentReplyId], references: [id], onDelete: Cascade)
+  childReplies  ReviewReply[] @relation("ReplyThread")
+  body          String
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  likes ReplyLike[]
+
+  @@index([reviewId])
+  @@map("review_replies")
+}
+
+model ReviewLike {
+  reviewId  Int      @map("review_id")
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([reviewId, userId])
+  @@map("review_likes")
+}
+
+model ReplyLike {
+  replyId   Int         @map("reply_id")
+  reply     ReviewReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  userId    Int         @map("user_id")
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@id([replyId, userId])
+  @@map("reply_likes")
 }

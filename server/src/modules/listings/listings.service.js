@@ -2,7 +2,14 @@ import { prisma } from '../../lib/prisma.js';
 import { forbidden, notFound } from '../../lib/errors.js';
 import { storage } from '../../lib/storage.js';
 
-const OWNER_SELECT = { id: true, fullName: true, avatarUrl: true, createdAt: true };
+const OWNER_SELECT = {
+  id: true,
+  fullName: true,
+  avatarUrl: true,
+  ratingAvg: true,
+  ratingCount: true,
+  createdAt: true,
+};
 
 const LISTING_INCLUDE = {
   owner: { select: OWNER_SELECT },

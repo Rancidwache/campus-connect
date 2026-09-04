@@ -7,6 +7,7 @@ import escrowRoutes from './modules/payments/escrow.routes.js';
 import mpesaRoutes from './modules/payments/mpesa.routes.js';
 import notificationsRoutes from './modules/notifications/notifications.routes.js';
 import messagesRoutes from './modules/messages/messages.routes.js';
+import reviewsRoutes from './modules/reviews/reviews.routes.js';
 
 const api = Router();
 
@@ -21,5 +22,6 @@ api.use('/transactions', escrowRoutes); // Module 2 — HustleGuard escrow
 api.use('/mpesa', mpesaRoutes); // Safaricom Daraja callbacks
 api.use('/notifications', notificationsRoutes);
 api.use('/messages', messagesRoutes); // Module 3 — E2EE messaging (blind relay)
+api.use('/reviews', reviewsRoutes); // Phase 2 — ratings & reviews
 
 export default api;

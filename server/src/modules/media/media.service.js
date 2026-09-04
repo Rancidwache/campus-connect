@@ -4,7 +4,7 @@ import { env } from '../../config/env.js';
 import { storage, newKey } from '../../lib/storage.js';
 
 const LISTING_INCLUDE = {
-  owner: { select: { id: true, fullName: true } },
+  owner: { select: { id: true, fullName: true, avatarUrl: true, ratingAvg: true, ratingCount: true } },
   media: { orderBy: [{ kind: 'asc' }, { position: 'asc' }] },
 };
 
@@ -94,6 +94,8 @@ const PUBLIC_PROFILE = {
   bio: true,
   avatarUrl: true,
   socials: true,
+  ratingAvg: true,
+  ratingCount: true,
   createdAt: true,
 };
 
