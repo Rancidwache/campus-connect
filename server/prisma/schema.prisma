@@ -61,6 +61,11 @@ enum NotificationType {
   JOB_DECLINED
 }
 
+enum MediaKind {
+  IMAGE
+  VIDEO
+}
+
 model User {
   id            Int      @id @default(autoincrement()) @map("user_id")
   fullName      String   @map("full_name")
@@ -68,6 +73,11 @@ model User {
   passwordHash  String   @map("password_hash")
   phoneVerified Boolean  @default(false) @map("phone_verified")
   publicKey     String?  @map("public_key")
+  bio           String?
+  avatarUrl     String?  @map("avatar_url")
+  avatarKey     String?  @map("avatar_key")
+  // { tiktok, instagram, whatsapp, x, facebook, youtube, linkedin, website } — all optional
+  socials       Json?
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
@@ -112,10 +122,27 @@ model Listing {
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
   transactions Transaction[]
+  media        ListingMedia[]
 
   @@index([categoryType, status])
   @@index([createdAt])
   @@map("listings")
+}
+
+// Up to 5 images + one short video per listing. Files live in object storage
+// (Supabase Storage in production, local disk in dev — see src/lib/storage.js).
+model ListingMedia {
+  id         Int       @id @default(autoincrement())
+  listingId  Int       @map("listing_id")
+  listing    Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  kind       MediaKind
+  url        String
+  storageKey String    @map("storage_key")
+  position   Int        @default(0)
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  @@index([listingId])
+  @@map("listing_media")
 }
 
 // ── Module 2 — HustleGuard escrow ──

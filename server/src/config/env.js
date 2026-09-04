@@ -55,6 +55,18 @@ export const env = {
   // in mock mode, for the simulator to call its own webhooks.
   selfBaseUrl: process.env.SELF_BASE_URL || `http://localhost:${int('PORT', 4000)}`,
 
+  storage: {
+    // local  -> files on disk under server/uploads, served at /uploads
+    // supabase -> Supabase Storage bucket (needs SUPABASE_SERVICE_ROLE_KEY)
+    driver: process.env.STORAGE_DRIVER || 'local',
+    bucket: process.env.STORAGE_BUCKET || 'campus-connect-media',
+    supabaseUrl: process.env.SUPABASE_URL || '',
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+    maxImageBytes: int('MAX_IMAGE_BYTES', 5 * 1024 * 1024),
+    maxVideoBytes: int('MAX_VIDEO_BYTES', 50 * 1024 * 1024),
+    maxImagesPerListing: int('MAX_IMAGES_PER_LISTING', 5),
+  },
+
   mpesa: {
     // mock | sandbox | production
     mode: process.env.MPESA_MODE || 'mock',

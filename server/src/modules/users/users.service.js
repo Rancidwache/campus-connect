@@ -1,5 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
 import { notFound } from '../../lib/errors.js';
+import { normalizeSocials } from '../../lib/socials.js';
 
 const PUBLIC_PROFILE = {
   id: true,
@@ -7,14 +8,21 @@ const PUBLIC_PROFILE = {
   phoneNumber: true,
   phoneVerified: true,
   publicKey: true,
+  bio: true,
+  avatarUrl: true,
+  socials: true,
   createdAt: true,
 };
 
-// Limited public view of another user (e.g. a listing owner). No phone number.
-const LISTING_OWNER_VIEW = {
+// Public view of another user (a listing owner / chat partner). No phone number.
+const PUBLIC_VIEW = {
   id: true,
   fullName: true,
   publicKey: true,
+  bio: true,
+  avatarUrl: true,
+  socials: true,
+  phoneVerified: true,
   createdAt: true,
 };
 
@@ -27,6 +35,8 @@ export async function getMe(userId) {
 export async function updateMe(userId, data) {
   const patch = {};
   if (data.fullName !== undefined) patch.fullName = data.fullName.trim();
+  if (data.bio !== undefined) patch.bio = data.bio.trim() || null;
+  if (data.socials !== undefined) patch.socials = normalizeSocials(data.socials);
   const user = await prisma.user.update({ where: { id: userId }, data: patch, select: PUBLIC_PROFILE });
   return user;
 }
@@ -42,7 +52,41 @@ export async function setPublicKey(userId, publicKey) {
 }
 
 export async function getPublicProfile(userId) {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: LISTING_OWNER_VIEW });
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: PUBLIC_VIEW });
   if (!user) throw notFound('User not found');
-  return user;
+
+  const listingCount = await prisma.listing.count({
+    where: { userId, status: 'ACTIVE' },
+  });
+
+  return { ...user, activeListingCount: listingCount };
+}
+
+export async function getPublicListings(userId, { page, pageSize }) {
+  const where = { userId, status: 'ACTIVE' };
+  const [total, rows] = await prisma.$transaction([
+    prisma.listing.count({ where }),
+    prisma.listing.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        owner: { select: { id: true, fullName: true } },
+        media: { orderBy: [{ kind: 'asc' }, { position: 'asc' }] },
+      },
+    }),
+  ]);
+  return {
+    data: rows.map((l) => {
+      const { media, ...rest } = l;
+      return {
+        ...rest,
+        price: Number(l.price),
+        images: media.filter((m) => m.kind === 'IMAGE').map((m) => ({ id: m.id, url: m.url })),
+        video: media.find((m) => m.kind === 'VIDEO') ? { url: media.find((m) => m.kind === 'VIDEO').url } : null,
+      };
+    }),
+    pagination: { page, pageSize, total, totalPages: Math.max(1, Math.ceil(total / pageSize)) },
+  };
 }

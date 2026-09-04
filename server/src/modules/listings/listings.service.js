@@ -1,10 +1,25 @@
 import { prisma } from '../../lib/prisma.js';
 import { forbidden, notFound } from '../../lib/errors.js';
+import { storage } from '../../lib/storage.js';
 
-const OWNER_SELECT = { id: true, fullName: true, createdAt: true };
+const OWNER_SELECT = { id: true, fullName: true, avatarUrl: true, createdAt: true };
+
+const LISTING_INCLUDE = {
+  owner: { select: OWNER_SELECT },
+  media: { orderBy: [{ kind: 'asc' }, { position: 'asc' }] },
+};
 
 function serialize(listing) {
-  return { ...listing, price: Number(listing.price) };
+  const { media = [], ...rest } = listing;
+  const video = media.find((m) => m.kind === 'VIDEO');
+  return {
+    ...rest,
+    price: Number(listing.price),
+    images: media
+      .filter((m) => m.kind === 'IMAGE')
+      .map((m) => ({ id: m.id, url: m.url, position: m.position })),
+    video: video ? { id: video.id, url: video.url } : null,
+  };
 }
 
 export async function createListing(userId, input) {
@@ -18,7 +33,7 @@ export async function createListing(userId, input) {
       price: input.price,
       location: input.location?.trim() || null,
     },
-    include: { owner: { select: OWNER_SELECT } },
+    include: LISTING_INCLUDE,
   });
   return serialize(listing);
 }
@@ -77,7 +92,7 @@ export async function listListings(query, currentUserId) {
       orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
-      include: { owner: { select: OWNER_SELECT } },
+      include: LISTING_INCLUDE,
     }),
   ]);
 
@@ -95,7 +110,7 @@ export async function listListings(query, currentUserId) {
 export async function getListing(id) {
   const listing = await prisma.listing.findUnique({
     where: { id },
-    include: { owner: { select: OWNER_SELECT } },
+    include: LISTING_INCLUDE,
   });
   if (!listing) throw notFound('Listing not found');
   return serialize(listing);
@@ -121,12 +136,14 @@ export async function updateListing(id, userId, input) {
   const listing = await prisma.listing.update({
     where: { id },
     data,
-    include: { owner: { select: OWNER_SELECT } },
+    include: LISTING_INCLUDE,
   });
   return serialize(listing);
 }
 
 export async function deleteListing(id, userId) {
   await loadOwned(id, userId);
-  await prisma.listing.delete({ where: { id } });
+  const media = await prisma.listingMedia.findMany({ where: { listingId: id }, select: { storageKey: true } });
+  await prisma.listing.delete({ where: { id } }); // media rows cascade
+  for (const m of media) storage.remove(m.storageKey);
 }
