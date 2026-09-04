@@ -134,6 +134,11 @@ export default function OrderDetail() {
               Try again
             </Link>
           )}
+          {isClient && ['RELEASED', 'REFUNDED'].includes(tx.escrowStatus) && (
+            <Link to={`/u/${tx.provider.id}#reviews`} className="btn btn-ghost">
+              ★ Leave a review
+            </Link>
+          )}
         </div>
       </div>
     </div>

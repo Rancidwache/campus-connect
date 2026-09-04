@@ -149,6 +149,18 @@ p { margin: 0 0 var(--cc-s3); }
 .badge-danger { background: var(--cc-danger-bg); color: var(--cc-danger); }
 .badge-muted { background: #f1f5f9; color: var(--cc-muted); }
 
+.linkbtn {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--cc-teal-700);
+  font-weight: 600;
+  cursor: pointer;
+}
+.linkbtn:disabled { color: var(--cc-muted); cursor: default; }
+.linkbtn:hover:not(:disabled) { text-decoration: underline; }
+
 /* Utility */
 .row { display: flex; gap: var(--cc-s3); flex-wrap: wrap; }
 .row-between { display: flex; justify-content: space-between; align-items: center; gap: var(--cc-s3); }

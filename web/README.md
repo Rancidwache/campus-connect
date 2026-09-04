@@ -55,8 +55,12 @@ src/
   edit screen; cover thumbnails in Browse.
 - **Profiles** — avatar, bio and social links; a public profile page at `/u/:id`
   linked from listing owners, orders and chat.
+- **Reviews** — a summary (average + distribution bars) and threaded review list
+  on every provider profile and listing page. Star ratings from people who
+  completed an order; replies + likes for everyone; Provider/Customer/Visitor
+  badges. "Leave a review" from a completed order.
 
 Pages: `Orders`, `OrderDetail`, `Messages`, `Thread`, `Notifications`,
 `PublicProfile`. Components: `EscrowBadge`, `Avatar`, `SocialLinks`,
-`ListingMediaManager`. Contexts: `RealtimeProvider` (Socket.IO),
-`NotificationsProvider`, `ChatProvider`.
+`ListingMediaManager`, `Stars`, `RoleBadge`, `ReviewsSection`. Contexts:
+`RealtimeProvider` (Socket.IO), `NotificationsProvider`, `ChatProvider`.

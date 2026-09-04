@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { CategoryBadge, StatusBadge } from '../components/ListingCard.jsx';
+import Stars from '../components/Stars.jsx';
+import ReviewsSection from '../components/ReviewsSection.jsx';
 import { KES } from '../lib/format.js';
 
 export default function ListingDetail() {
@@ -64,11 +66,17 @@ export default function ListingDetail() {
 
         <hr style={{ border: 0, borderTop: '1px solid var(--cc-line)' }} />
 
-        <p className="muted" style={{ margin: 0, fontSize: '0.9rem' }}>
+        <p className="muted row" style={{ margin: 0, fontSize: '0.9rem', gap: 6, alignItems: 'center' }}>
           Offered by{' '}
           <Link to={`/u/${listing.owner?.id}`} style={{ fontWeight: 700 }}>
             {listing.owner?.fullName}
           </Link>
+          {listing.owner?.ratingCount > 0 && (
+            <>
+              <Stars value={listing.owner.ratingAvg} size={13} />
+              <span>({listing.owner.ratingCount})</span>
+            </>
+          )}
         </p>
 
         {isOwner ? (
@@ -91,6 +99,13 @@ export default function ListingDetail() {
           </div>
         )}
       </div>
+
+      {listing.owner?.id && (
+        <ReviewsSection
+          providerId={listing.owner.id}
+          providerName={listing.owner.fullName.split(' ')[0]}
+        />
+      )}
     </div>
   );
 }

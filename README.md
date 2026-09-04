@@ -26,7 +26,7 @@ Built Agile, in monthly increments (see proposal section 1.6):
 | --- | --- |
 | Listing photos (≤5) + one short video | **Done** — object storage (local disk / Supabase Storage) |
 | Rich profiles — avatar, bio, social links, public profile page | **Done** |
-| Ratings & reviews (threaded, liked, role-badged) | Planned — Phase 2 |
+| Ratings & reviews (threaded, liked, role-badged) | **Done** — star rating gated to completed orders; open replies + likes; Provider/Customer/Visitor badges |
 | Browse filters, categories, saved listings | Planned — Phase 3 |
 | Community guidelines + reporting | Planned — Phase 4 |
 

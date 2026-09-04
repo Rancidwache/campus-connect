@@ -143,6 +143,27 @@ produced on the client (ECDH P-256 → HKDF → AES-GCM). Both users must have a
 | POST | `/delivered` | yes | Ack messages — `{ messageIds: [] }` |
 | GET | `/unread-count` | yes | `{ unread }` |
 
+### Reviews  `/api/reviews`
+
+Star ratings come from the client of a completed (`RELEASED`/`REFUNDED`) order —
+one review per order, about the provider. Replies and likes are open to any
+signed-in user. Each author in a thread carries a role: `PROVIDER` /
+`CUSTOMER` (has transacted with the provider) / `VISITOR`.
+
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| GET | `/provider/:providerId` | optional | Summary (`average`, `count`, `distribution`) + review threads; `likedByMe`/`mine` when signed in |
+| GET | `/pending` | yes | Orders the user can still review |
+| POST | `/` | verified | `{ transactionId, rating(1-5), body }` |
+| PATCH | `/:id` | author | `{ rating?, body? }` |
+| DELETE | `/:id` | author | |
+| POST | `/:id/replies` | yes | `{ body, parentReplyId? }` |
+| DELETE | `/replies/:replyId` | author | |
+| POST | `/:id/like` · `/replies/:replyId/like` | yes | Toggle → `{ liked, likeCount }` |
+
+`User.ratingAvg` / `ratingCount` are recomputed on every change and surface on
+`GET /users/:id` and on `listing.owner`.
+
 ### Real-time  (Socket.IO, same origin/port)
 
 Connect with `io(url, { auth: { token } })` — same JWT as REST. Server emits to the

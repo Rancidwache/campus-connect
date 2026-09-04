@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { KES } from '../lib/format.js';
+import Stars from './Stars.jsx';
 
 export function CategoryBadge({ type }) {
   const digital = type === 'DIGITAL';
@@ -52,8 +53,14 @@ export default function ListingCard({ listing }) {
       </p>
       <div className="row-between">
         <span className="price">{KES.format(listing.price)}</span>
-        <span className="muted" style={{ fontSize: '0.8rem' }}>
-          {listing.owner?.fullName}
+        <span className="stack" style={{ gap: 2, alignItems: 'flex-end' }}>
+          <span className="muted" style={{ fontSize: '0.8rem' }}>{listing.owner?.fullName}</span>
+          {listing.owner?.ratingCount > 0 && (
+            <span className="row" style={{ gap: 4, alignItems: 'center' }}>
+              <Stars value={listing.owner.ratingAvg} size={11} />
+              <span className="muted" style={{ fontSize: '0.72rem' }}>({listing.owner.ratingCount})</span>
+            </span>
+          )}
         </span>
       </div>
       </div>

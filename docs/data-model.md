@@ -39,6 +39,19 @@ Operational companion table (not in the proposal ERD, needed for verification):
 | | `status` | Enum | `ACTIVE` \| `PAUSED` \| `HIRED` |
 | | `created_at` / `updated_at` | DateTime | |
 
+### Review / ReviewReply / ReviewLike / ReplyLike  *(Phase 2)*
+
+- **Review** — `id`, `provider_id` (FK), `author_id` (FK), `transaction_id` (FK,
+  **unique** — one review per completed order), `rating` (1–5), `body`,
+  timestamps.
+- **ReviewReply** — `id`, `review_id` (FK, cascade), `author_id` (FK),
+  `parent_reply_id` (FK self, nullable — one level of nesting), `body`, timestamps.
+- **ReviewLike** — composite PK `(review_id, user_id)`.
+- **ReplyLike** — composite PK `(reply_id, user_id)`.
+
+`User.rating_avg` / `rating_count` are a denormalised rollup, recomputed on every
+review create / edit / delete.
+
 ### ListingMedia
 
 Up to 5 images + one video per listing. Files live in object storage
