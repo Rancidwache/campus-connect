@@ -6,6 +6,7 @@ import { CategoryBadge, StatusBadge } from '../components/ListingCard.jsx';
 import Stars from '../components/Stars.jsx';
 import ReviewsSection from '../components/ReviewsSection.jsx';
 import FavoriteButton from '../components/FavoriteButton.jsx';
+import ReportButton from '../components/ReportButton.jsx';
 import { KES } from '../lib/format.js';
 
 export default function ListingDetail() {
@@ -100,6 +101,7 @@ export default function ListingDetail() {
                 </Link>
               )}
             </div>
+            <ReportButton targetType="LISTING" targetId={listing.id} label="Report this listing" />
           </div>
         )}
       </div>

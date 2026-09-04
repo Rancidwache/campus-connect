@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import Avatar from './Avatar.jsx';
 import Stars from './Stars.jsx';
 import RoleBadge, { roleColor } from './RoleBadge.jsx';
+import ReportButton from './ReportButton.jsx';
 import { timeAgo } from '../lib/format.js';
 
 export default function ReviewsSection({ providerId, providerName = 'this provider' }) {
@@ -204,6 +205,7 @@ function ReviewCard({ review, providerId, onChange }) {
             <button className="linkbtn" onClick={del}>Delete</button>
           </>
         )}
+        {!review.mine && <ReportButton targetType="REVIEW" targetId={review.id} />}
       </div>
 
       {(review.replies.length > 0 || replying) && (
@@ -254,6 +256,7 @@ function ReplyRow({ reply, onChange }) {
             {reply.likedByMe ? '♥' : '♡'} {reply.likeCount || ''}
           </button>
           {reply.mine && <button className="linkbtn" onClick={del}>Delete</button>}
+          {!reply.mine && <ReportButton targetType="REVIEW_REPLY" targetId={reply.id} />}
         </div>
       </div>
     </div>

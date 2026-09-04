@@ -62,6 +62,9 @@ src/
 - **Browse & discovery** — curated category chips (with live counts), price-range
   and location filters, "Clear filters"; a ♥ on every card and listing page, and
   a **Saved** page.
+- **Guidelines & reporting** — a `/guidelines` page (footer link); a Report dialog
+  on listings, reviews, replies and profiles; a moderator queue at `/admin/reports`
+  (nav link shown only to `isAdmin` users) with status tabs and content removal.
 
 Pages: `Orders`, `OrderDetail`, `Messages`, `Thread`, `Notifications`,
 `PublicProfile`. Components: `EscrowBadge`, `Avatar`, `SocialLinks`,

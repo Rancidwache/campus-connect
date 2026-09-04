@@ -7,6 +7,7 @@ import SocialLinks from '../components/SocialLinks.jsx';
 import ListingCard from '../components/ListingCard.jsx';
 import Stars from '../components/Stars.jsx';
 import ReviewsSection from '../components/ReviewsSection.jsx';
+import ReportButton from '../components/ReportButton.jsx';
 
 export default function PublicProfile() {
   const { id } = useParams();
@@ -77,6 +78,7 @@ export default function PublicProfile() {
             )
           )}
         </div>
+        {!isMe && <ReportButton targetType="USER" targetId={profile.id} label="Report this user" />}
       </div>
 
       <h2 style={{ margin: '4px 0' }}>Listings</h2>

@@ -17,6 +17,8 @@ import Messages from './pages/Messages.jsx';
 import Thread from './pages/Thread.jsx';
 import PublicProfile from './pages/PublicProfile.jsx';
 import Saved from './pages/Saved.jsx';
+import Guidelines from './pages/Guidelines.jsx';
+import AdminReports from './pages/AdminReports.jsx';
 
 export default function App() {
   return (
@@ -27,6 +29,7 @@ export default function App() {
         <Route path="verify" element={<VerifyOtp />} />
         <Route path="login" element={<Login />} />
         <Route path="browse" element={<Browse />} />
+        <Route path="guidelines" element={<Guidelines />} />
         <Route path="u/:id" element={<PublicProfile />} />
         <Route path="listings/new" element={<ProtectedRoute><ListingForm mode="create" /></ProtectedRoute>} />
         <Route path="listings/:id" element={<ListingDetail />} />
@@ -38,6 +41,7 @@ export default function App() {
         <Route path="messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="messages/:userId" element={<ProtectedRoute><Thread /></ProtectedRoute>} />
         <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+        <Route path="admin/reports" element={<ProtectedRoute><AdminReports /></ProtectedRoute>} />
         <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

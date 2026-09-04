@@ -167,6 +167,21 @@ signed-in user. Each author in a thread carries a role: `PROVIDER` /
 `User.ratingAvg` / `ratingCount` are recomputed on every change and surface on
 `GET /users/:id` and on `listing.owner`.
 
+### Reports & moderation  `/api/reports` · `/api/admin/reports`
+
+| Method | Path | Auth | Notes |
+| --- | --- | --- | --- |
+| POST | `/reports` | yes | `{ targetType(LISTING\|REVIEW\|REVIEW_REPLY\|USER), targetId, reason, detail? }` — rejects self-reports and duplicates (409) |
+| GET | `/reports/mine` | yes | The user's own reports + status |
+| GET | `/admin/reports` | admin | Queue — `?status=`; each row has the reporter and a resolved target snapshot |
+| GET | `/admin/reports/stats` | admin | Counts by status |
+| PATCH | `/admin/reports/:id` | admin | `{ status(REVIEWING\|ACTIONED\|DISMISSED), reviewNote? }` |
+| POST | `/admin/reports/:id/remove` | admin | Removes the reported content, closes sibling reports as `ACTIONED` |
+
+`User.isAdmin` marks a moderator — the first seed user is one; promote others with
+`node scripts/make-admin.js <phone>`. Listings are **soft-deleted** (`status =
+REMOVED`) so transaction history survives.
+
 ### Real-time  (Socket.IO, same origin/port)
 
 Connect with `io(url, { auth: { token } })` — same JWT as REST. Server emits to the

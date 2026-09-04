@@ -57,6 +57,16 @@ review create / edit / delete.
 Saved listings — composite PK `(user_id, listing_id)`, `created_at`. Listing
 responses carry a `favorited` flag when the request is authenticated.
 
+### Report  *(Phase 4)*
+
+`id`, `reporter_id` (FK), `target_type` (`LISTING` \| `REVIEW` \| `REVIEW_REPLY` \|
+`USER`), `target_id`, `reason` enum, `detail?`, `status` (`OPEN` → `REVIEWING` →
+`ACTIONED` \| `DISMISSED`), `reviewed_by_id?` (FK), `review_note?`, timestamps.
+**Unique** on `(reporter_id, target_type, target_id)`.
+
+`User.is_admin` flags a moderator. Removing a reported listing sets
+`Listing.status = REMOVED` (soft delete) rather than dropping the row.
+
 ### ListingMedia
 
 Up to 5 images + one video per listing. Files live in object storage

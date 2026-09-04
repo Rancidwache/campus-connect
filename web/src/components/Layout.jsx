@@ -66,6 +66,11 @@ export default function Layout() {
                   Alerts
                   <Count n={unreadCount} />
                 </NavLink>
+                {user.isAdmin && (
+                  <NavLink to="/admin/reports" style={navStyle}>
+                    Moderation
+                  </NavLink>
+                )}
                 <NavLink to="/profile" style={navStyle}>
                   {user.fullName.split(' ')[0]}
                 </NavLink>
@@ -93,10 +98,13 @@ export default function Layout() {
 
       <footer style={styles.footer}>
         <div className="container" style={{ paddingBottom: 24 }}>
-          <p className="muted" style={{ margin: 0, fontSize: '0.85rem' }}>
+          <p className="muted" style={{ margin: '0 0 6px', fontSize: '0.85rem' }}>
             Campus Connect V2 — a secure marketplace for skills, gigs and equipment hire.
             Payments held in M-Pesa escrow. Chat is end-to-end encrypted.
           </p>
+          <Link to="/guidelines" className="muted" style={{ fontSize: '0.85rem' }}>
+            Community Guidelines
+          </Link>
         </div>
       </footer>
     </>
