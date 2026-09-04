@@ -15,6 +15,7 @@ import OrderDetail from './pages/OrderDetail.jsx';
 import Notifications from './pages/Notifications.jsx';
 import Messages from './pages/Messages.jsx';
 import Thread from './pages/Thread.jsx';
+import PublicProfile from './pages/PublicProfile.jsx';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="verify" element={<VerifyOtp />} />
         <Route path="login" element={<Login />} />
         <Route path="browse" element={<Browse />} />
+        <Route path="u/:id" element={<PublicProfile />} />
         <Route path="listings/new" element={<ProtectedRoute><ListingForm mode="create" /></ProtectedRoute>} />
         <Route path="listings/:id" element={<ListingDetail />} />
         <Route path="listings/:id/edit" element={<ProtectedRoute><ListingForm mode="edit" /></ProtectedRoute>} />

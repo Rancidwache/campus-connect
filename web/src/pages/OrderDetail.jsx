@@ -76,9 +76,11 @@ export default function OrderDetail() {
           <EscrowBadge status={tx.escrowStatus} />
         </div>
         <p className="muted" style={{ margin: 0, fontSize: '0.9rem' }}>
-          {isClient
-            ? `You are hiring ${tx.provider.fullName}`
-            : `${tx.client.fullName} is hiring you`}
+          {isClient ? 'You are hiring ' : ''}
+          <Link to={`/u/${isClient ? tx.provider.id : tx.client.id}`}>
+            {isClient ? tx.provider.fullName : tx.client.fullName}
+          </Link>
+          {isClient ? '' : ' is hiring you'}
         </p>
 
         <p style={{ margin: 0 }}>{escrowHint(tx.escrowStatus, tx.role)}</p>

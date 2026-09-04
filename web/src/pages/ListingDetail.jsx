@@ -54,6 +54,9 @@ export default function ListingDetail() {
           {listing.category}
           {listing.location ? ` • ${listing.location}` : ''}
         </p>
+
+        <Gallery images={listing.images} video={listing.video} />
+
         <p className="price" style={{ fontSize: '1.4rem' }}>
           {KES.format(listing.price)}
         </p>
@@ -62,7 +65,10 @@ export default function ListingDetail() {
         <hr style={{ border: 0, borderTop: '1px solid var(--cc-line)' }} />
 
         <p className="muted" style={{ margin: 0, fontSize: '0.9rem' }}>
-          Offered by <strong>{listing.owner?.fullName}</strong>
+          Offered by{' '}
+          <Link to={`/u/${listing.owner?.id}`} style={{ fontWeight: 700 }}>
+            {listing.owner?.fullName}
+          </Link>
         </p>
 
         {isOwner ? (
@@ -88,6 +94,71 @@ export default function ListingDetail() {
     </div>
   );
 }
+
+function Gallery({ images = [], video }) {
+  const [active, setActive] = useState(0);
+  if (images.length === 0 && !video) return null;
+
+  const showVideo = video && active === images.length;
+
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <div
+        style={{
+          width: '100%',
+          aspectRatio: '16 / 10',
+          borderRadius: 'var(--cc-radius)',
+          overflow: 'hidden',
+          background: '#000',
+          border: '1px solid var(--cc-line)',
+        }}
+      >
+        {showVideo ? (
+          <video src={video.url} controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        ) : images[active] ? (
+          <img
+            src={images[active].url}
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : null}
+      </div>
+      {(images.length + (video ? 1 : 0)) > 1 && (
+        <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+          {images.map((img, i) => (
+            <button
+              key={img.id}
+              type="button"
+              onClick={() => setActive(i)}
+              style={thumb(active === i)}
+            >
+              <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </button>
+          ))}
+          {video && (
+            <button type="button" onClick={() => setActive(images.length)} style={thumb(showVideo)}>
+              <span style={{ fontSize: 18 }}>▶</span>
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const thumb = (activeState) => ({
+  width: 60,
+  height: 60,
+  borderRadius: 8,
+  overflow: 'hidden',
+  padding: 0,
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: 'var(--cc-bg)',
+  border: activeState ? '2px solid var(--cc-teal-600)' : '1px solid var(--cc-line)',
+});
 
 function HirePanel({ listing, user }) {
   const navigate = useNavigate();

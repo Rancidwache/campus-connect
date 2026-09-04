@@ -77,9 +77,12 @@ Phone numbers accept `0712345678`, `712345678`, `254712…`, `+254712…`.
 | Method | Path | Auth | Notes |
 | --- | --- | --- | --- |
 | GET | `/me` | yes | Current profile |
-| PATCH | `/me` | yes | Update `fullName` |
+| PATCH | `/me` | yes | Update `fullName`, `bio`, `socials` (normalised to URLs) |
 | PUT | `/me/public-key` | yes | Register the device public key for E2EE chat |
-| GET | `/:id` | no | Public profile of a listing owner (no phone number) |
+| POST | `/me/avatar` | yes | Upload a profile photo (multipart `avatar`) |
+| DELETE | `/me/avatar` | yes | Remove the profile photo |
+| GET | `/:id` | no | Public profile (no phone) + `activeListingCount` |
+| GET | `/:id/listings` | no | That user's active listings (paginated) |
 
 ### Listings  `/api/listings`
 
@@ -89,7 +92,16 @@ Phone numbers accept `0712345678`, `712345678`, `254712…`, `+254712…`.
 | GET | `/:id` | no | Single listing |
 | POST | `/` | verified | Create — `categoryType(DIGITAL\|PHYSICAL), category, title, description, price, location?` |
 | PATCH | `/:id` | verified, owner | Update fields or `status(ACTIVE\|PAUSED\|HIRED)` |
-| DELETE | `/:id` | verified, owner | Remove |
+| DELETE | `/:id` | verified, owner | Remove (also deletes its media) |
+| POST | `/:id/images` | verified, owner | Upload photos (multipart `images`, ≤5 total) |
+| POST | `/:id/video` | verified, owner | Set/replace the short video (multipart `video`) |
+| DELETE | `/:id/media/:mediaId` | verified, owner | Remove one image or the video |
+
+Listing responses carry `images: [{id,url,position}]` and `video: {id,url}`.
+
+**Storage** — `STORAGE_DRIVER=local` (default) writes to `server/uploads/`, served
+at `/uploads`. `STORAGE_DRIVER=supabase` uploads to a public Supabase Storage
+bucket and needs `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (server-only secret).
 
 ### Escrow — HustleGuard  `/api/transactions`
 

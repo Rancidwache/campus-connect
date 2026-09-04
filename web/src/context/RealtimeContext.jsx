@@ -18,12 +18,10 @@ export function RealtimeProvider({ children }) {
       return;
     }
 
-    // Dev: Vite serves on 5173, API + socket on 4000. Same origin in production.
-    const url = import.meta.env.DEV ? 'http://localhost:4000' : undefined;
-    const socket = io(url, {
-      auth: { token: tokenStore.get() },
-      transports: ['websocket', 'polling'],
-    });
+    // Same origin in every environment — Vite proxies /socket.io to the API in dev.
+    // Default transport order (polling, then upgrade to websocket) so it still
+    // connects when a dev proxy won't pass the websocket upgrade.
+    const socket = io({ path: '/socket.io', auth: { token: tokenStore.get() } });
     socketRef.current = socket;
 
     socket.on('connect', () => setConnected(true));

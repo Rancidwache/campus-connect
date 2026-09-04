@@ -20,6 +20,16 @@ Built Agile, in monthly increments (see proposal section 1.6):
 | 3. Secure Messaging (E2EE) | Month 3 | **Done** — ECDH key exchange + AES-GCM in the browser; server is a blind relay; Socket.IO for live delivery |
 | 4. Notifications | Month 3 | In-app notifications + Socket.IO real-time push; **done** |
 
+### Marketplace features (post-MVP)
+
+| Feature | State |
+| --- | --- |
+| Listing photos (≤5) + one short video | **Done** — object storage (local disk / Supabase Storage) |
+| Rich profiles — avatar, bio, social links, public profile page | **Done** |
+| Ratings & reviews (threaded, liked, role-badged) | Planned — Phase 2 |
+| Browse filters, categories, saved listings | Planned — Phase 3 |
+| Community guidelines + reporting | Planned — Phase 4 |
+
 ## Architecture (this phase)
 
 ```

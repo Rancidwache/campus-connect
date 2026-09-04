@@ -51,7 +51,12 @@ src/
 - **Chat** — end-to-end encrypted threads (`lib/e2ee.js`: ECDH → HKDF → AES-GCM).
   Live delivery over Socket.IO; message the provider from a listing or an order.
 - **Alerts** — notifications, pushed instantly over the socket (25 s poll fallback).
+- **Media** — listing photo galleries + short video; drag-free uploader on the
+  edit screen; cover thumbnails in Browse.
+- **Profiles** — avatar, bio and social links; a public profile page at `/u/:id`
+  linked from listing owners, orders and chat.
 
-Pages: `Orders`, `OrderDetail`, `Messages`, `Thread`, `Notifications`.
-Components: `EscrowBadge`. Contexts: `RealtimeProvider` (Socket.IO),
+Pages: `Orders`, `OrderDetail`, `Messages`, `Thread`, `Notifications`,
+`PublicProfile`. Components: `EscrowBadge`, `Avatar`, `SocialLinks`,
+`ListingMediaManager`. Contexts: `RealtimeProvider` (Socket.IO),
 `NotificationsProvider`, `ChatProvider`.

@@ -46,10 +46,33 @@ async function request(method, path, body, { auth = true } = {}) {
   return payload;
 }
 
+// Multipart upload — let the browser set the Content-Type (with boundary).
+async function requestForm(method, path, formData) {
+  const headers = {};
+  const token = tokenStore.get();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`/api${path}`, { method, headers, body: formData });
+  if (res.status === 204) return null;
+
+  let payload = null;
+  const text = await res.text();
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      payload = { error: text };
+    }
+  }
+  if (!res.ok) throw new ApiError(res.status, payload);
+  return payload;
+}
+
 export const api = {
   get: (path, opts) => request('GET', path, undefined, opts),
   post: (path, body, opts) => request('POST', path, body, opts),
   patch: (path, body, opts) => request('PATCH', path, body, opts),
   put: (path, body, opts) => request('PUT', path, body, opts),
   del: (path, opts) => request('DELETE', path, undefined, opts),
+  postForm: (path, formData) => requestForm('POST', path, formData),
 };

@@ -13,6 +13,9 @@ Messages, Transactions**. Prisma schema: `server/prisma/schema.prisma`.
 | | `password_hash` | String | bcrypt |
 | | `phone_verified` | Boolean | Set true after OTP check; gate for hiring/payouts |
 | | `public_key` | String? | Client-generated public key for E2EE chat; set during onboarding |
+| | `bio` | String? | Short profile blurb |
+| | `avatar_url` / `avatar_key` | String? | Profile photo URL + its storage key |
+| | `socials` | JSON? | `{ tiktok, instagram, whatsapp, x, facebook, youtube, linkedin, website }` — normalised to URLs |
 | | `created_at` | DateTime | |
 | | `updated_at` | DateTime | |
 
@@ -35,6 +38,14 @@ Operational companion table (not in the proposal ERD, needed for verification):
 | | `location` | String? | Town / area — relevant for physical hire |
 | | `status` | Enum | `ACTIVE` \| `PAUSED` \| `HIRED` |
 | | `created_at` / `updated_at` | DateTime | |
+
+### ListingMedia
+
+Up to 5 images + one video per listing. Files live in object storage
+(`server/uploads` in dev, Supabase Storage in production).
+
+`id`, `listing_id` (FK, cascade), `kind` (`IMAGE` \| `VIDEO`), `url`,
+`storage_key`, `position`, `created_at`.
 
 ## Messages  *(Module 3 — E2EE chat)*
 

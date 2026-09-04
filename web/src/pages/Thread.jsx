@@ -110,7 +110,11 @@ export default function Thread() {
       </Link>
 
       <div className="row-between">
-        <h1 style={{ margin: 0, fontSize: '1.2rem' }}>{partner.fullName}</h1>
+        <h1 style={{ margin: 0, fontSize: '1.2rem' }}>
+          <Link to={`/u/${partner.id}`} style={{ color: 'var(--cc-ink)' }}>
+            {partner.fullName}
+          </Link>
+        </h1>
         <span className="badge badge-ok">🔒 End-to-end encrypted</span>
       </div>
 

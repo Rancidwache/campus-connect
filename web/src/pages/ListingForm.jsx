@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
+import ListingMediaManager from '../components/ListingMediaManager.jsx';
 
 const EMPTY = {
   categoryType: 'DIGITAL',
@@ -18,6 +19,7 @@ export default function ListingForm({ mode }) {
 
   const [form, setForm] = useState(EMPTY);
   const [status, setStatus] = useState('ACTIVE');
+  const [media, setMedia] = useState({ images: [], video: null });
   const [error, setError] = useState(null);
   const [details, setDetails] = useState([]);
   const [busy, setBusy] = useState(false);
@@ -37,6 +39,7 @@ export default function ListingForm({ mode }) {
           location: listing.location || '',
         });
         setStatus(listing.status);
+        setMedia({ images: listing.images || [], video: listing.video || null });
         setLoaded(true);
       })
       .catch((err) => setError(err instanceof ApiError ? err.message : 'Could not load listing'));
@@ -60,7 +63,8 @@ export default function ListingForm({ mode }) {
         navigate(`/listings/${listing.id}`);
       } else {
         const { listing } = await api.post('/listings', payload);
-        navigate(`/listings/${listing.id}`);
+        // Straight to edit so the seller can add photos/video against a real id.
+        navigate(`/listings/${listing.id}/edit`, { state: { justCreated: true } });
       }
     } catch (err) {
       if (err instanceof ApiError) {
@@ -76,7 +80,8 @@ export default function ListingForm({ mode }) {
   if (!loaded) return <p className="muted">Loading…</p>;
 
   return (
-    <div className="card center-narrow" style={{ maxWidth: 560 }}>
+    <div className="stack center-narrow" style={{ maxWidth: 560 }}>
+    <div className="card">
       <h1>{editing ? 'Edit listing' : 'Post a listing'}</h1>
 
       <form onSubmit={onSubmit} className="stack" style={{ marginTop: 12 }}>
@@ -190,6 +195,21 @@ export default function ListingForm({ mode }) {
           {busy ? 'Saving…' : editing ? 'Save changes' : 'Publish listing'}
         </button>
       </form>
+    </div>
+
+    {editing && (
+      <>
+        <ListingMediaManager
+          listingId={Number(id)}
+          images={media.images}
+          video={media.video}
+          onChange={(listing) => setMedia({ images: listing.images, video: listing.video })}
+        />
+        <button className="btn btn-ghost btn-block" onClick={() => navigate(`/listings/${id}`)}>
+          Done — view listing
+        </button>
+      </>
+    )}
     </div>
   );
 }
