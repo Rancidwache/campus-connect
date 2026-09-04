@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { CategoryBadge, StatusBadge } from '../components/ListingCard.jsx';
 import Stars from '../components/Stars.jsx';
 import ReviewsSection from '../components/ReviewsSection.jsx';
+import FavoriteButton from '../components/FavoriteButton.jsx';
 import { KES } from '../lib/format.js';
 
 export default function ListingDetail() {
@@ -91,11 +92,14 @@ export default function ListingDetail() {
         ) : (
           <div className="stack">
             <HirePanel listing={listing} user={user} />
-            {user && listing.owner?.id && (
-              <Link to={`/messages/${listing.owner.id}`} className="btn btn-ghost">
-                Message {listing.owner.fullName.split(' ')[0]} first
-              </Link>
-            )}
+            <div className="row">
+              <FavoriteButton listingId={listing.id} favorited={listing.favorited} variant="button" />
+              {user && listing.owner?.id && (
+                <Link to={`/messages/${listing.owner.id}`} className="btn btn-ghost">
+                  Message {listing.owner.fullName.split(' ')[0]} first
+                </Link>
+              )}
+            </div>
           </div>
         )}
       </div>

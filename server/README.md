@@ -88,8 +88,11 @@ Phone numbers accept `0712345678`, `712345678`, `254712…`, `+254712…`.
 
 | Method | Path | Auth | Notes |
 | --- | --- | --- | --- |
-| GET | `/` | optional | Browse / search. Query: `q, categoryType, category, minPrice, maxPrice, sort, page, pageSize`, and `mine=true` (auth) |
-| GET | `/:id` | no | Single listing |
+| GET | `/` | optional | Browse / search. Query: `q, categoryType, category, location, minPrice, maxPrice, sort, page, pageSize`, and `mine=true` (auth). Carries `favorited` per row when signed in |
+| GET | `/categories` | no | Active categories with counts |
+| GET | `/saved` | yes | The signed-in user's saved listings |
+| GET | `/:id` | optional | Single listing (with `favorited` when signed in) |
+| POST | `/:id/favorite` | yes | Toggle save → `{ favorited }` |
 | POST | `/` | verified | Create — `categoryType(DIGITAL\|PHYSICAL), category, title, description, price, location?` |
 | PATCH | `/:id` | verified, owner | Update fields or `status(ACTIVE\|PAUSED\|HIRED)` |
 | DELETE | `/:id` | verified, owner | Remove (also deletes its media) |

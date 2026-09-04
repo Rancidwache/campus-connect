@@ -59,6 +59,9 @@ src/
   on every provider profile and listing page. Star ratings from people who
   completed an order; replies + likes for everyone; Provider/Customer/Visitor
   badges. "Leave a review" from a completed order.
+- **Browse & discovery** — curated category chips (with live counts), price-range
+  and location filters, "Clear filters"; a ♥ on every card and listing page, and
+  a **Saved** page.
 
 Pages: `Orders`, `OrderDetail`, `Messages`, `Thread`, `Notifications`,
 `PublicProfile`. Components: `EscrowBadge`, `Avatar`, `SocialLinks`,

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { KES } from '../lib/format.js';
 import Stars from './Stars.jsx';
+import FavoriteButton from './FavoriteButton.jsx';
 
 export function CategoryBadge({ type }) {
   const digital = type === 'DIGITAL';
@@ -22,8 +23,11 @@ export default function ListingCard({ listing }) {
     <Link
       to={`/listings/${listing.id}`}
       className="card"
-      style={{ textDecoration: 'none', display: 'block', padding: 0, overflow: 'hidden' }}
+      style={{ textDecoration: 'none', display: 'block', padding: 0, overflow: 'hidden', position: 'relative' }}
     >
+      <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}>
+        <FavoriteButton listingId={listing.id} favorited={listing.favorited} />
+      </div>
       <div
         style={{
           height: 150,

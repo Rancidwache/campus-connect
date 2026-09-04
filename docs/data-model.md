@@ -52,6 +52,11 @@ Operational companion table (not in the proposal ERD, needed for verification):
 `User.rating_avg` / `rating_count` are a denormalised rollup, recomputed on every
 review create / edit / delete.
 
+### Favorite  *(Phase 3)*
+
+Saved listings — composite PK `(user_id, listing_id)`, `created_at`. Listing
+responses carry a `favorited` flag when the request is authenticated.
+
 ### ListingMedia
 
 Up to 5 images + one video per listing. Files live in object storage

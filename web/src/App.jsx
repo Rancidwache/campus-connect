@@ -16,6 +16,7 @@ import Notifications from './pages/Notifications.jsx';
 import Messages from './pages/Messages.jsx';
 import Thread from './pages/Thread.jsx';
 import PublicProfile from './pages/PublicProfile.jsx';
+import Saved from './pages/Saved.jsx';
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="listings/:id" element={<ListingDetail />} />
         <Route path="listings/:id/edit" element={<ProtectedRoute><ListingForm mode="edit" /></ProtectedRoute>} />
         <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="saved" element={<ProtectedRoute><Saved /></ProtectedRoute>} />
         <Route path="orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
         <Route path="orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
         <Route path="messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
 import ListingMediaManager from '../components/ListingMediaManager.jsx';
+import { CATEGORIES } from '../lib/categories.js';
 
 const EMPTY = {
   categoryType: 'DIGITAL',
@@ -103,11 +104,17 @@ export default function ListingForm({ mode }) {
           <input
             id="category"
             className="input"
+            list="cc-categories"
             value={form.category}
             onChange={update('category')}
-            placeholder="Photography, Tutoring, Camera hire…"
+            placeholder="Start typing or pick one…"
             required
           />
+          <datalist id="cc-categories">
+            {CATEGORIES.filter((c) => !c.type || c.type === form.categoryType).map((c) => (
+              <option key={c.name} value={c.name} />
+            ))}
+          </datalist>
         </div>
 
         <div className="field">
