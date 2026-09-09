@@ -30,6 +30,14 @@ Built Agile, in monthly increments (see proposal section 1.6):
 | Browse filters, categories, saved listings | **Done** — price/location filters, curated category chips with counts, favourite ♥ + a Saved page |
 | Community guidelines + reporting | **Done** — a Guidelines page, Report on listings/reviews/replies/users, and a moderator queue (`/admin/reports`) |
 
+### Objective 4 — testing & deployment
+
+| Item | State |
+| --- | --- |
+| Automated test suite | **Done** — 57 tests (Vitest): unit + HTTP integration against in-memory PGlite. CI on every push/PR. See `server/README.md` → Tests |
+| Kong API gateway + WAF edge stack | Next |
+| Deploy (PWA + API + Supabase) | Next |
+
 ## Architecture (this phase)
 
 ```

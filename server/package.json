@@ -14,7 +14,12 @@
     "db:generate": "prisma generate",
     "db:seed": "node scripts/seed.js",
     "db:studio": "prisma studio",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:watch": "vitest",
+    "test:schema": "prisma migrate diff --from-empty --to-schema-datamodel ./prisma/schema.prisma --script > tests/setup/schema.sql"
   },
   "prisma": {
     "seed": "node scripts/seed.js"
@@ -35,6 +40,10 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "prisma": "^6.2.1"
+    "@electric-sql/pglite": "^0.2.17",
+    "pglite-prisma-adapter": "^0.6.1",
+    "prisma": "^6.2.1",
+    "supertest": "^7.2.2",
+    "vitest": "^3.2.7"
   }
 }

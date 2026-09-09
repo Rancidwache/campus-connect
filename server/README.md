@@ -190,6 +190,27 @@ authenticated user: `message:new`, `message:sent`, `message:delivered`,
 
 See `requests.http` for ready-to-run examples (VS Code REST Client / IntelliJ HTTP).
 
+## Tests
+
+```bash
+npm test               # unit + integration (Vitest)
+npm run test:unit      # pure functions only — fast, no DB
+npm run test:integration
+npm run test:watch
+```
+
+- **Unit** (`tests/unit/`) — phone/social normalisation, fee maths, storage keys,
+  zod schemas, the Daraja mock. No I/O.
+- **Integration** (`tests/integration/`) — real HTTP through the Express app
+  (`supertest`) against an **in-memory PGlite Postgres**. No Docker, no external
+  database. The schema is applied from `tests/setup/schema.sql`; regenerate it
+  after a schema change with `npm run test:schema`.
+- M-Pesa runs in `mock` mode and the escrow flow is driven by POSTing synthetic
+  Daraja callbacks to the webhook routes.
+
+CI (`.github/workflows/ci.yml`) runs the whole suite plus the web build on every
+push and PR.
+
 ## Layout
 
 ```

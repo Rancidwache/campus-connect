@@ -35,6 +35,8 @@ export const env = {
 
   jwtSecret: required('JWT_SECRET'),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  // bcrypt work factor for passwords (lowered in tests for speed).
+  bcryptRounds: int('BCRYPT_ROUNDS', 12),
 
   otp: {
     ttlMinutes: int('OTP_TTL_MINUTES', 10),

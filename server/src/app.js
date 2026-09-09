@@ -22,7 +22,7 @@ export function createApp() {
     }),
   );
   app.use(express.json({ limit: '1mb' }));
-  app.use(morgan(env.isProd ? 'combined' : 'dev'));
+  app.use(morgan(env.isProd ? 'combined' : 'dev', { skip: () => env.nodeEnv === 'test' }));
 
   // Local storage driver: serve uploaded files. (The supabase driver serves its
   // own public URLs and never hits this.)

@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../lib/prisma.js';
+import { env } from '../../config/env.js';
 import { badRequest, conflict, unauthorized } from '../../lib/errors.js';
 import { normalizeKePhone } from '../../lib/phone.js';
 import { signAccessToken } from '../../lib/jwt.js';
@@ -21,7 +22,7 @@ export async function register({ fullName, phoneNumber, password }) {
   const existing = await prisma.user.findUnique({ where: { phoneNumber: phone } });
   if (existing) throw conflict('An account with that phone number already exists');
 
-  const passwordHash = await bcrypt.hash(password, 12);
+  const passwordHash = await bcrypt.hash(password, env.bcryptRounds);
   const user = await prisma.user.create({
     data: { fullName: fullName.trim(), phoneNumber: phone, passwordHash },
     select: PUBLIC_USER,

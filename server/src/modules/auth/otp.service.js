@@ -14,7 +14,7 @@ function generateCode() {
 // same purpose are invalidated so only the newest code works.
 export async function issueOtp(userId, phoneNumber, purpose) {
   const code = generateCode();
-  const codeHash = await bcrypt.hash(code, 10);
+  const codeHash = await bcrypt.hash(code, Math.min(env.bcryptRounds, 10));
   const expiresAt = new Date(Date.now() + env.otp.ttlMinutes * 60 * 1000);
 
   await prisma.$transaction([
