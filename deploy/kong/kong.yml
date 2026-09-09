@@ -1,0 +1,72 @@
+# Kong Gateway — DB-less declarative config.
+# Every request has already passed the WAF; Kong adds gateway-level policy
+# (rate limiting, payload caps, CORS) and locks the M-Pesa callback paths to
+# Safaricom's published IP ranges before anything reaches the API.
+_format_version: "3.0"
+_transform: true
+
+services:
+  # ── General API, uploads and Socket.IO ──
+  - name: campus-api
+    url: http://api:4000
+    routes:
+      - name: api
+        paths:
+          - /api
+          - /uploads
+          - /socket.io
+        strip_path: false
+        preserve_host: true
+        protocols: [http, https]
+    plugins:
+      - name: rate-limiting
+        config:
+          minute: 600
+          policy: local
+          limit_by: ip
+          fault_tolerant: true
+      - name: request-size-limiting
+        config:
+          allowed_payload_size: 60          # MB — room for the listing video
+          size_unit: megabytes
+      - name: cors
+        config:
+          origins: ["*"]                    # tighten to your web origin in production
+          methods: [GET, POST, PATCH, PUT, DELETE, OPTIONS]
+          headers: [Authorization, Content-Type, Accept]
+          credentials: true
+          max_age: 3600
+
+  # ── M-Pesa Daraja callbacks — Safaricom IPs only ──
+  - name: campus-mpesa
+    url: http://api:4000
+    routes:
+      - name: mpesa-callbacks
+        paths:
+          - /api/mpesa
+        strip_path: false
+        preserve_host: true
+        protocols: [http, https]
+    plugins:
+      - name: ip-restriction
+        config:
+          # Safaricom Daraja production/sandbox ranges + the compose network.
+          allow:
+            - 196.201.214.0/24
+            - 196.201.214.200/29
+            - 196.201.213.44/32
+            - 196.201.212.0/24
+            - 196.201.212.128/25
+            - 196.201.212.136/32
+            - 196.201.212.138/32
+            - 172.16.0.0/12
+            - 127.0.0.1/32
+      - name: request-size-limiting
+        config:
+          allowed_payload_size: 1
+          size_unit: megabytes
+      - name: rate-limiting
+        config:
+          minute: 240
+          policy: local
+          limit_by: ip

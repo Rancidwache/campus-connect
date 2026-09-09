@@ -35,8 +35,8 @@ Built Agile, in monthly increments (see proposal section 1.6):
 | Item | State |
 | --- | --- |
 | Automated test suite | **Done** — 57 tests (Vitest): unit + HTTP integration against in-memory PGlite. CI on every push/PR. See `server/README.md` → Tests |
-| Kong API gateway + WAF edge stack | Next |
-| Deploy (PWA + API + Supabase) | Next |
+| Kong API gateway + WAF edge stack | **Done** — `deploy/docker-compose.yml`: nginx (PWA) → OWASP ModSecurity CRS → Kong (DB-less) → API, M-Pesa callbacks locked to Safaricom IPs. See `docs/deploy.md` |
+| Deploy (PWA + API + Supabase) | Next — run the edge stack on a host with TLS |
 
 ## Architecture (this phase)
 

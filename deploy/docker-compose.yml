@@ -1,0 +1,101 @@
+# Campus Connect V2 — production edge stack.
+#
+#   Internet
+#     → web      nginx: serves the PWA, forwards /api /uploads /socket.io
+#     → waf      OWASP ModSecurity Core Rule Set
+#     → gateway  Kong (DB-less): rate limiting, payload caps, CORS, M-Pesa IP allow-list
+#     → api      this repo (Node/Express) — connects to Supabase Postgres
+#
+# Bring it up from the repo root:
+#   cp deploy/.env.example deploy/.env   # then fill DATABASE_URL / JWT_SECRET / M-Pesa
+#   docker compose --env-file deploy/.env -f deploy/docker-compose.yml up --build
+#
+# Then open http://localhost:8080
+
+name: campus-connect-v2
+
+services:
+  api:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      TRUST_PROXY: "1"
+      CORS_ORIGIN: ${PUBLIC_URL:-http://localhost:8080}
+      SELF_BASE_URL: ${PUBLIC_URL:-http://localhost:8080}
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in deploy/.env}
+      DIRECT_URL: ${DIRECT_URL:-${DATABASE_URL}}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in deploy/.env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      MPESA_MODE: ${MPESA_MODE:-mock}
+      PLATFORM_FEE_RATE: ${PLATFORM_FEE_RATE:-0.10}
+      MPESA_CALLBACK_SECRET: ${MPESA_CALLBACK_SECRET:?set MPESA_CALLBACK_SECRET}
+      MPESA_CONSUMER_KEY: ${MPESA_CONSUMER_KEY:-}
+      MPESA_CONSUMER_SECRET: ${MPESA_CONSUMER_SECRET:-}
+      MPESA_SHORTCODE: ${MPESA_SHORTCODE:-}
+      MPESA_PASSKEY: ${MPESA_PASSKEY:-}
+      MPESA_B2C_SHORTCODE: ${MPESA_B2C_SHORTCODE:-}
+      MPESA_INITIATOR_NAME: ${MPESA_INITIATOR_NAME:-}
+      MPESA_SECURITY_CREDENTIAL: ${MPESA_SECURITY_CREDENTIAL:-}
+      SMS_PROVIDER: ${SMS_PROVIDER:-console}
+      AT_USERNAME: ${AT_USERNAME:-}
+      AT_API_KEY: ${AT_API_KEY:-}
+      AT_SENDER_ID: ${AT_SENDER_ID:-}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-supabase}
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-campus-connect-media}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      OTP_DEV_ECHO: "false"
+    expose: ["4000"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  gateway:
+    image: kong:3.7
+    restart: unless-stopped
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/kong.yml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: "off"
+      KONG_LOG_LEVEL: notice
+      KONG_REAL_IP_HEADER: X-Forwarded-For
+      KONG_TRUSTED_IPS: 0.0.0.0/0
+    volumes:
+      - ./kong/kong.yml:/kong/kong.yml:ro
+    expose: ["8000"]
+    depends_on:
+      api:
+        condition: service_healthy
+
+  waf:
+    image: owasp/modsecurity-crs:4.7.0-nginx-alpine
+    restart: unless-stopped
+    environment:
+      BACKEND: http://gateway:8000
+      PORT: "8080"
+      MODSEC_RULE_ENGINE: "On"          # DetectionOnly to log without blocking
+      PARANOIA: "1"
+      ANOMALY_INBOUND: "5"
+      ANOMALY_OUTBOUND: "4"
+      MODSEC_REQ_BODY_ACCESS: "On"
+      MODSEC_REQ_BODY_LIMIT: "67108864" # 64 MB — allow media uploads through
+      MODSEC_REQ_BODY_NOFILES_LIMIT: "131072"
+      NGINX_ALWAYS_TLS_REDIRECT: "false"
+    expose: ["8080"]
+    depends_on: [gateway]
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/web/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on: [waf]

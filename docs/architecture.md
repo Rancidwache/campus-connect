@@ -28,8 +28,10 @@ Gateway, so only clean, authenticated traffic reaches the backend. That is a
 - Keeping all configuration in environment variables (12-factor), so the same image
   runs locally and behind the gateway.
 
-A `kong/` declarative config and a `docker-compose` edge stack will be added in the
-deployment phase.
+The edge stack is built: `deploy/docker-compose.yml` chains
+**nginx (PWA) → OWASP ModSecurity CRS → Kong (DB-less) → API**, with the M-Pesa
+callback paths locked to Safaricom's Daraja IP ranges at the gateway. See
+`docs/deploy.md`.
 
 ## Service isolation
 

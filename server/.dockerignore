@@ -1,0 +1,11 @@
+node_modules
+uploads
+.env
+.env.*
+tests
+coverage
+*.log
+npm-debug.log*
+.git
+.vscode
+.idea
