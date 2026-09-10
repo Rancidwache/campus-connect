@@ -27,15 +27,27 @@ npm run preview
 
 ```
 src/
-  api/client.js          fetch wrapper + token storage + ApiError
-  context/AuthContext.jsx session state (token in localStorage)
-  lib/e2ee.js             in-browser ECDH keypair for encrypted chat (Module 1 setup)
-  theme/tokens.css        the shared design system (colours, spacing, components)
-  components/             Layout, ListingCard, ProtectedRoute
-  pages/
-    Landing, Register, VerifyOtp, Login
-    Browse, ListingDetail, ListingForm (create/edit), Dashboard, Profile
+  api/client.js            fetch wrapper + token storage + ApiError
+  context/                 Auth, Realtime (socket), Notifications, Chat, Theme, Toast
+  lib/e2ee.js              in-browser ECDH keypair for encrypted chat
+  theme/tokens.css         design tokens — dual light/dark palette, type, motion
+  theme/components.css     buttons, cards, inputs, badges, chips, skeleton, toast
+  components/
+    motion.jsx             PageTransition / Stagger / FadeIn / Pop (framer-motion)
+    Modal, Skeleton, ThemeToggle, AuthShell, Avatar, ...
+  pages/                   Landing, auth, Browse, ListingDetail, Orders, ...
 ```
+
+### Design system
+
+- **Dual theme** — `ThemeProvider` cycles light → dark → system; `data-theme`
+  on `<html>`, OS fallback via `prefers-color-scheme`. Pre-paint script in
+  `index.html` avoids a flash. All colours are semantic CSS variables so both
+  themes come from one set of rules.
+- **Motion** — framer-motion under `<MotionConfig reducedMotion="user">`: page
+  transitions, list stagger, an animated escrow stepper, the favourite heart,
+  toasts. Everything degrades under `prefers-reduced-motion`.
+- **Type** — Inter Variable (`@fontsource-variable/inter`, bundled/offline).
 
 ## What works now (Modules 1–3)
 

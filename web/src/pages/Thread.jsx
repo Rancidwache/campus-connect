@@ -143,12 +143,12 @@ export default function Thread() {
               style={{
                 alignSelf: mine ? 'flex-end' : 'flex-start',
                 maxWidth: '80%',
-                background: mine ? 'var(--cc-teal-700)' : 'var(--cc-bg)',
-                color: mine ? '#fff' : 'var(--cc-ink)',
-                border: mine ? 'none' : '1px solid var(--cc-line)',
-                borderRadius: 12,
+                background: mine ? 'var(--brand)' : 'var(--surface-2)',
+                color: mine ? 'var(--brand-contrast)' : 'var(--text)',
+                border: mine ? 'none' : '1px solid var(--border)',
+                borderRadius: 'var(--r-md)',
                 padding: '8px 12px',
-                fontSize: '0.92rem',
+                fontSize: 'var(--fs-sm)',
               }}
             >
               <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
