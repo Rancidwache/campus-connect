@@ -1,176 +1,296 @@
 /* Campus Connect V2 — design tokens.
-   One small system shared by web now, and by the native app later.
-   Priorities from the proposal: speed and trust signals over decoration. */
+   Dual light / dark theme. When the user picks a theme explicitly we stamp
+   data-theme on <html>; otherwise the OS setting decides. */
 
 :root {
+  color-scheme: light;
+
+  /* Surfaces & text */
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --surface-2: #eef1f5;
+  --surface-3: #e4e8ee;
+  --text: #0d1626;
+  --text-dim: #566072;
+  --text-faint: #8b94a3;
+  --border: #e2e7ef;
+  --border-strong: #ccd3df;
+
   /* Brand */
-  --cc-teal-700: #0f766e;
-  --cc-teal-600: #0d9488;
-  --cc-teal-500: #14b8a6;
-  --cc-teal-50: #f0fdfa;
+  --brand: #0d9488;
+  --brand-strong: #0f766e;
+  --brand-soft: #e4f5f2;
+  --brand-contrast: #ffffff;
+  --accent: #ef7c3c;
+  --accent-soft: #fdeee4;
 
-  /* Neutrals */
-  --cc-ink: #0f172a;
-  --cc-body: #334155;
-  --cc-muted: #64748b;
-  --cc-line: #e2e8f0;
-  --cc-surface: #ffffff;
-  --cc-bg: #f8fafc;
+  /* Status */
+  --ok: #15803d;
+  --ok-soft: #dcf5e3;
+  --warn: #b45309;
+  --warn-soft: #fbeecb;
+  --danger: #c02626;
+  --danger-soft: #fbe3e1;
+  --info: #1d4ed8;
+  --info-soft: #dfe8fd;
 
-  /* Status — used for escrow badges (Funds Secured / Awaiting Approval / Released) */
-  --cc-ok: #15803d;
-  --cc-ok-bg: #dcfce7;
-  --cc-warn: #b45309;
-  --cc-warn-bg: #fef3c7;
-  --cc-info: #1d4ed8;
-  --cc-info-bg: #dbeafe;
-  --cc-danger: #b91c1c;
-  --cc-danger-bg: #fee2e2;
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(13, 22, 38, 0.06), 0 1px 1px rgba(13, 22, 38, 0.04);
+  --shadow-md: 0 2px 6px rgba(13, 22, 38, 0.07), 0 8px 24px rgba(13, 22, 38, 0.08);
+  --shadow-lg: 0 12px 32px rgba(13, 22, 38, 0.12), 0 4px 12px rgba(13, 22, 38, 0.08);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--brand) 35%, transparent);
 
-  /* Spacing scale */
-  --cc-s1: 4px;
-  --cc-s2: 8px;
-  --cc-s3: 12px;
-  --cc-s4: 16px;
-  --cc-s5: 24px;
-  --cc-s6: 32px;
-  --cc-s7: 48px;
+  /* Type */
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.25rem;
+  --fs-3xl: 3rem;
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-normal: 1.6;
 
-  --cc-radius: 12px;
-  --cc-radius-sm: 8px;
-  --cc-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.06);
+  /* Space */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+  --sp-9: 48px;
+  --sp-10: 64px;
+  --sp-12: 96px;
 
-  --cc-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --cc-maxw: 960px;
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --r-full: 999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  --dur-4: 480ms;
+
+  /* Layout */
+  --maxw: 1040px;
+  --maxw-reading: 680px;
+  --maxw-narrow: 460px;
+  --header-h: 60px;
 }
 
-* { box-sizing: border-box; }
+/* ── Dark palette ─────────────────────────────────────────────────────────── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
 
-html, body, #root { height: 100%; }
+  --bg: #0b0f14;
+  --surface: #141a22;
+  --surface-2: #1b232d;
+  --surface-3: #232e3a;
+  --text: #e9eef4;
+  --text-dim: #9aa6b3;
+  --text-faint: #6b7784;
+  --border: #26303b;
+  --border-strong: #384552;
+
+  --brand: #2dd4bf;
+  --brand-strong: #14b8a6;
+  --brand-soft: #0f2b2a;
+  --brand-contrast: #04231f;
+  --accent: #ff9a5c;
+  --accent-soft: #33210f;
+
+  --ok: #4ade80;
+  --ok-soft: #12331f;
+  --warn: #fbbf24;
+  --warn-soft: #33280d;
+  --danger: #f87171;
+  --danger-soft: #34191a;
+  --info: #60a5fa;
+  --info-soft: #14243f;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45), 0 12px 32px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--brand) 45%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #0b0f14;
+    --surface: #141a22;
+    --surface-2: #1b232d;
+    --surface-3: #232e3a;
+    --text: #e9eef4;
+    --text-dim: #9aa6b3;
+    --text-faint: #6b7784;
+    --border: #26303b;
+    --border-strong: #384552;
+
+    --brand: #2dd4bf;
+    --brand-strong: #14b8a6;
+    --brand-soft: #0f2b2a;
+    --brand-contrast: #04231f;
+    --accent: #ff9a5c;
+    --accent-soft: #33210f;
+
+    --ok: #4ade80;
+    --ok-soft: #12331f;
+    --warn: #fbbf24;
+    --warn-soft: #33280d;
+    --danger: #f87171;
+    --danger-soft: #34191a;
+    --info: #60a5fa;
+    --info-soft: #14243f;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45), 0 12px 32px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+    --ring: 0 0 0 3px color-mix(in srgb, var(--brand) 45%, transparent);
+  }
+}
+
+/* ── Back-compat aliases ─────────────────────────────────────────────────────
+   The pre-redesign screens use --cc-* names. Map them to the new semantic
+   tokens so they pick up light/dark automatically. Key screens use the new
+   names directly. */
+:root {
+  --cc-teal-700: var(--brand-strong);
+  --cc-teal-600: var(--brand);
+  --cc-teal-500: var(--brand);
+  --cc-teal-50: var(--brand-soft);
+  --cc-ink: var(--text);
+  --cc-body: var(--text);
+  --cc-muted: var(--text-dim);
+  --cc-line: var(--border);
+  --cc-surface: var(--surface);
+  --cc-bg: var(--bg);
+  --cc-ok: var(--ok);
+  --cc-ok-bg: var(--ok-soft);
+  --cc-warn: var(--warn);
+  --cc-warn-bg: var(--warn-soft);
+  --cc-info: var(--info);
+  --cc-info-bg: var(--info-soft);
+  --cc-danger: var(--danger);
+  --cc-danger-bg: var(--danger-soft);
+  --cc-s1: var(--sp-1);
+  --cc-s2: var(--sp-2);
+  --cc-s3: var(--sp-3);
+  --cc-s4: var(--sp-4);
+  --cc-s5: var(--sp-6);
+  --cc-s6: var(--sp-7);
+  --cc-s7: var(--sp-9);
+  --cc-radius: var(--r-md);
+  --cc-radius-sm: var(--r-sm);
+  --cc-shadow: var(--shadow-sm);
+  --cc-font: var(--font-sans);
+  --cc-maxw: var(--maxw);
+}
+
+/* ── Reset & base ────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
-  margin: 0;
-  font-family: var(--cc-font);
-  color: var(--cc-body);
-  background: var(--cc-bg);
+  min-height: 100dvh;
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--text);
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease-out);
 }
 
-a { color: var(--cc-teal-700); }
-
-h1, h2, h3 { color: var(--cc-ink); line-height: 1.2; margin: 0 0 var(--cc-s3); }
-h1 { font-size: 1.6rem; }
-h2 { font-size: 1.25rem; }
-h3 { font-size: 1.05rem; }
-
-p { margin: 0 0 var(--cc-s3); }
-
-.container {
-  max-width: var(--cc-maxw);
-  margin: 0 auto;
-  padding: var(--cc-s5) var(--cc-s4) var(--cc-s7);
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--cc-s2);
-  font: inherit;
-  font-weight: 600;
-  padding: 10px 16px;
-  border-radius: var(--cc-radius-sm);
-  border: 1px solid transparent;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
-}
-.btn:disabled { opacity: 0.55; cursor: not-allowed; }
-.btn-primary { background: var(--cc-teal-700); color: #fff; }
-.btn-primary:hover:not(:disabled) { background: var(--cc-teal-600); }
-.btn-ghost { background: transparent; border-color: var(--cc-line); color: var(--cc-ink); }
-.btn-ghost:hover:not(:disabled) { background: var(--cc-teal-50); }
-.btn-block { width: 100%; }
-.btn-sm { padding: 6px 10px; font-size: 0.85rem; }
-
-/* Forms */
-.field { margin-bottom: var(--cc-s4); }
-.field label {
+img,
+picture,
+svg,
+video {
   display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--cc-ink);
-  margin-bottom: 6px;
+  max-width: 100%;
 }
-.input, .textarea, .select {
-  width: 100%;
+
+button,
+input,
+select,
+textarea {
   font: inherit;
-  color: var(--cc-ink);
-  padding: 10px 12px;
-  border: 1px solid var(--cc-line);
-  border-radius: var(--cc-radius-sm);
-  background: var(--cc-surface);
-}
-.input:focus, .textarea:focus, .select:focus {
-  outline: 2px solid var(--cc-teal-500);
-  outline-offset: 1px;
-  border-color: var(--cc-teal-500);
-}
-.textarea { min-height: 120px; resize: vertical; }
-.hint { font-size: 0.8rem; color: var(--cc-muted); margin-top: 6px; }
-
-/* Cards */
-.card {
-  background: var(--cc-surface);
-  border: 1px solid var(--cc-line);
-  border-radius: var(--cc-radius);
-  box-shadow: var(--cc-shadow);
-  padding: var(--cc-s5);
+  color: inherit;
 }
 
-/* Badges */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
+a {
+  color: var(--brand-strong);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: var(--lh-tight);
   font-weight: 700;
-  letter-spacing: 0.02em;
-  padding: 3px 8px;
-  border-radius: 999px;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-wrap: balance;
 }
-.badge-digital { background: var(--cc-info-bg); color: var(--cc-info); }
-.badge-physical { background: var(--cc-warn-bg); color: var(--cc-warn); }
-.badge-ok { background: var(--cc-ok-bg); color: var(--cc-ok); }
-.badge-info { background: var(--cc-info-bg); color: var(--cc-info); }
-.badge-warn { background: var(--cc-warn-bg); color: var(--cc-warn); }
-.badge-danger { background: var(--cc-danger-bg); color: var(--cc-danger); }
-.badge-muted { background: #f1f5f9; color: var(--cc-muted); }
+h1 {
+  font-size: var(--fs-xl);
+}
+h2 {
+  font-size: var(--fs-lg);
+}
+h3 {
+  font-size: var(--fs-md);
+}
 
-.linkbtn {
-  background: none;
-  border: 0;
-  padding: 0;
-  font: inherit;
-  color: var(--cc-teal-700);
-  font-weight: 600;
-  cursor: pointer;
+p {
+  text-wrap: pretty;
 }
-.linkbtn:disabled { color: var(--cc-muted); cursor: default; }
-.linkbtn:hover:not(:disabled) { text-decoration: underline; }
 
-/* Utility */
-.row { display: flex; gap: var(--cc-s3); flex-wrap: wrap; }
-.row-between { display: flex; justify-content: space-between; align-items: center; gap: var(--cc-s3); }
-.stack > * + * { margin-top: var(--cc-s4); }
-.grid-listings {
-  display: grid;
-  gap: var(--cc-s4);
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: var(--r-sm);
 }
-.muted { color: var(--cc-muted); }
-.error-text { color: var(--cc-danger); font-size: 0.9rem; }
-.center-narrow { max-width: 420px; margin: var(--cc-s6) auto; }
-.price { font-weight: 800; color: var(--cc-ink); }
+
+::selection {
+  background: color-mix(in srgb, var(--brand) 30%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
