@@ -1,24 +1,32 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { api, ApiError } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import { CategoryBadge, StatusBadge } from '../components/ListingCard.jsx';
 import Stars from '../components/Stars.jsx';
+import Avatar from '../components/Avatar.jsx';
 import ReviewsSection from '../components/ReviewsSection.jsx';
 import FavoriteButton from '../components/FavoriteButton.jsx';
 import ReportButton from '../components/ReportButton.jsx';
+import Skeleton, { SkeletonText } from '../components/Skeleton.jsx';
 import { KES } from '../lib/format.js';
+
+const EASE = [0.22, 1, 0.36, 1];
 
 export default function ListingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const [listing, setListing] = useState(null);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    setListing(null);
     api
       .get(`/listings/${id}`, { auth: false })
       .then((res) => setListing(res.listing))
@@ -28,82 +36,113 @@ export default function ListingDetail() {
   const isOwner = user && listing && user.id === listing.owner?.id;
 
   const onDelete = async () => {
-    if (!confirm('Delete this listing? This cannot be undone.')) return;
+    if (!confirm('Remove this listing?')) return;
     setBusy(true);
     try {
       await api.del(`/listings/${id}`);
+      toast.success('Listing removed');
       navigate('/dashboard', { replace: true });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Delete failed');
+      toast.error(err instanceof ApiError ? err.message : 'Delete failed');
       setBusy(false);
     }
   };
 
   if (error) return <p className="error-text">{error}</p>;
-  if (!listing) return <p className="muted">Loading…</p>;
+
+  if (!listing) {
+    return (
+      <div className="detail-grid">
+        <div className="stack">
+          <Skeleton h={280} r="var(--r-lg)" />
+          <Skeleton h={22} w="70%" />
+          <SkeletonText lines={4} />
+        </div>
+        <Skeleton h={260} r="var(--r-lg)" />
+      </div>
+    );
+  }
 
   return (
-    <div className="stack">
-      <Link to="/browse" className="muted" style={{ fontSize: '0.9rem' }}>
-        ← Back to listings
+    <div className="stack-6">
+      <Link to="/browse" className="chip" style={{ alignSelf: 'flex-start', cursor: 'pointer' }}>
+        ← Browse
       </Link>
 
-      <div className="card stack">
-        <div className="row">
-          <CategoryBadge type={listing.categoryType} />
-          <StatusBadge status={listing.status} />
-        </div>
-        <h1 style={{ margin: 0 }}>{listing.title}</h1>
-        <p className="muted" style={{ margin: 0 }}>
-          {listing.category}
-          {listing.location ? ` • ${listing.location}` : ''}
-        </p>
-
-        <Gallery images={listing.images} video={listing.video} />
-
-        <p className="price" style={{ fontSize: '1.4rem' }}>
-          {KES.format(listing.price)}
-        </p>
-        <p style={{ whiteSpace: 'pre-wrap' }}>{listing.description}</p>
-
-        <hr style={{ border: 0, borderTop: '1px solid var(--cc-line)' }} />
-
-        <p className="muted row" style={{ margin: 0, fontSize: '0.9rem', gap: 6, alignItems: 'center' }}>
-          Offered by{' '}
-          <Link to={`/u/${listing.owner?.id}`} style={{ fontWeight: 700 }}>
-            {listing.owner?.fullName}
-          </Link>
-          {listing.owner?.ratingCount > 0 && (
-            <>
-              <Stars value={listing.owner.ratingAvg} size={13} />
-              <span>({listing.owner.ratingCount})</span>
-            </>
-          )}
-        </p>
-
-        {isOwner ? (
-          <div className="row">
-            <Link to={`/listings/${listing.id}/edit`} className="btn btn-ghost">
-              Edit listing
-            </Link>
-            <button className="btn btn-ghost" onClick={onDelete} disabled={busy}>
-              Delete
-            </button>
+      <div className="detail-grid">
+        {/* Left column */}
+        <div className="stack">
+          <div className="row" style={{ gap: 8 }}>
+            <CategoryBadge type={listing.categoryType} />
+            <StatusBadge status={listing.status} />
           </div>
-        ) : (
-          <div className="stack">
-            <HirePanel listing={listing} user={user} />
-            <div className="row">
-              <FavoriteButton listingId={listing.id} favorited={listing.favorited} variant="button" />
-              {user && listing.owner?.id && (
-                <Link to={`/messages/${listing.owner.id}`} className="btn btn-ghost">
-                  Message {listing.owner.fullName.split(' ')[0]} first
-                </Link>
+          <h1 style={{ margin: 0 }}>{listing.title}</h1>
+          <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }}>
+            {listing.category}
+            {listing.location ? ` · ${listing.location}` : ''}
+          </p>
+
+          <Gallery images={listing.images} video={listing.video} />
+
+          <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{listing.description}</p>
+
+          <hr className="divider" />
+
+          <Link to={`/u/${listing.owner?.id}`} className="row" style={{ gap: 10, textDecoration: 'none' }}>
+            <Avatar src={listing.owner?.avatarUrl} name={listing.owner?.fullName} size={40} />
+            <span className="stack" style={{ gap: 1 }}>
+              <strong style={{ color: 'var(--text)' }}>{listing.owner?.fullName}</strong>
+              {listing.owner?.ratingCount > 0 ? (
+                <span className="row" style={{ gap: 5 }}>
+                  <Stars value={listing.owner.ratingAvg} size={12} />
+                  <span className="faint" style={{ fontSize: 'var(--fs-xs)' }}>
+                    {listing.owner.ratingAvg.toFixed(1)} · {listing.owner.ratingCount} review
+                    {listing.owner.ratingCount === 1 ? '' : 's'}
+                  </span>
+                </span>
+              ) : (
+                <span className="faint" style={{ fontSize: 'var(--fs-xs)' }}>No reviews yet</span>
+              )}
+            </span>
+          </Link>
+        </div>
+
+        {/* Right column — sticky action panel */}
+        <div className="detail-aside">
+          <div className="card stack">
+            <div className="row-between">
+              <span className="price" style={{ fontSize: 'var(--fs-lg)' }}>
+                {KES.format(listing.price)}
+              </span>
+              {!isOwner && (
+                <FavoriteButton listingId={listing.id} favorited={listing.favorited} variant="button" />
               )}
             </div>
-            <ReportButton targetType="LISTING" targetId={listing.id} label="Report this listing" />
+
+            {isOwner ? (
+              <div className="stack-2">
+                <Link to={`/listings/${listing.id}/edit`} className="btn btn-primary btn-block">
+                  Edit listing
+                </Link>
+                <button className="btn btn-ghost btn-block" onClick={onDelete} disabled={busy}>
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <>
+                <HirePanel listing={listing} user={user} />
+                {user && listing.owner?.id && (
+                  <Link to={`/messages/${listing.owner.id}`} className="btn btn-ghost btn-block">
+                    Message {listing.owner.fullName.split(' ')[0]} first
+                  </Link>
+                )}
+                <div style={{ textAlign: 'center' }}>
+                  <ReportButton targetType="LISTING" targetId={listing.id} label="Report this listing" />
+                </div>
+              </>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {listing.owner?.id && (
@@ -118,47 +157,77 @@ export default function ListingDetail() {
 
 function Gallery({ images = [], video }) {
   const [active, setActive] = useState(0);
-  if (images.length === 0 && !video) return null;
+  if (images.length === 0 && !video) {
+    return (
+      <div
+        style={{
+          aspectRatio: '16 / 10',
+          borderRadius: 'var(--r-lg)',
+          background: 'var(--brand-soft)',
+          display: 'grid',
+          placeItems: 'center',
+          color: 'var(--brand)',
+          fontSize: '3rem',
+          border: '1px solid var(--border)',
+        }}
+        aria-hidden
+      >
+        ✦
+      </div>
+    );
+  }
 
+  const total = images.length + (video ? 1 : 0);
   const showVideo = video && active === images.length;
 
   return (
     <div className="stack" style={{ gap: 8 }}>
       <div
         style={{
-          width: '100%',
           aspectRatio: '16 / 10',
-          borderRadius: 'var(--cc-radius)',
+          borderRadius: 'var(--r-lg)',
           overflow: 'hidden',
           background: '#000',
-          border: '1px solid var(--cc-line)',
+          border: '1px solid var(--border)',
         }}
       >
-        {showVideo ? (
-          <video src={video.url} controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-        ) : images[active] ? (
-          <img
-            src={images[active].url}
-            alt=""
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        ) : null}
+        <AnimatePresence mode="wait">
+          {showVideo ? (
+            <motion.video
+              key="video"
+              src={video.url}
+              controls
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          ) : (
+            <motion.img
+              key={active}
+              src={images[active]?.url}
+              alt=""
+              initial={{ opacity: 0, scale: 1.03 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.32, ease: EASE }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          )}
+        </AnimatePresence>
       </div>
-      {(images.length + (video ? 1 : 0)) > 1 && (
-        <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+
+      {total > 1 && (
+        <div className="row" style={{ gap: 6 }}>
           {images.map((img, i) => (
-            <button
-              key={img.id}
-              type="button"
-              onClick={() => setActive(i)}
-              style={thumb(active === i)}
-            >
+            <button key={img.id} type="button" onClick={() => setActive(i)} style={thumb(active === i)}>
               <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </button>
           ))}
           {video && (
             <button type="button" onClick={() => setActive(images.length)} style={thumb(showVideo)}>
-              <span style={{ fontSize: 18 }}>▶</span>
+              <span style={{ fontSize: 16 }}>▶</span>
             </button>
           )}
         </div>
@@ -167,30 +236,30 @@ function Gallery({ images = [], video }) {
   );
 }
 
-const thumb = (activeState) => ({
-  width: 60,
-  height: 60,
-  borderRadius: 8,
+const thumb = (isActive) => ({
+  width: 56,
+  height: 56,
+  borderRadius: 'var(--r-sm)',
   overflow: 'hidden',
   padding: 0,
   cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'var(--cc-bg)',
-  border: activeState ? '2px solid var(--cc-teal-600)' : '1px solid var(--cc-line)',
+  display: 'grid',
+  placeItems: 'center',
+  background: 'var(--surface-2)',
+  color: 'var(--text-dim)',
+  border: isActive ? '2px solid var(--brand)' : '1px solid var(--border)',
+  transition: 'border-color var(--dur-1) var(--ease-out)',
 });
 
 function HirePanel({ listing, user }) {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [quote, setQuote] = useState(null);
   const [open, setOpen] = useState(false);
   const [phone, setPhone] = useState(user?.phoneNumber || '');
   const [phoneEdited, setPhoneEdited] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(null);
 
-  // Pre-fill the phone once the profile arrives (if the user hasn't typed).
   useEffect(() => {
     if (user?.phoneNumber && !phoneEdited) setPhone(user.phoneNumber);
   }, [user?.phoneNumber, phoneEdited]);
@@ -200,35 +269,32 @@ function HirePanel({ listing, user }) {
     api
       .get(`/transactions/quote?listingId=${listing.id}`)
       .then(setQuote)
-      .catch((err) => setError(err instanceof ApiError ? err.message : 'Could not get a quote'));
-  }, [open, quote, listing.id]);
+      .catch(() => toast.error('Could not get a quote'));
+  }, [open, quote, listing.id, toast]);
 
   if (!user) {
     return (
-      <p className="muted" style={{ fontSize: '0.9rem' }}>
-        <Link to="/login">Sign in</Link> to hire this and pay into M-Pesa escrow.
-      </p>
+      <Link to="/login" className="btn btn-primary btn-block">
+        Sign in to hire
+      </Link>
     );
   }
-
   if (!user.phoneVerified) {
     return (
-      <p className="muted" style={{ fontSize: '0.9rem' }}>
-        <Link to="/verify">Verify your phone number</Link> to hire — it's the number M-Pesa
-        will charge.
-      </p>
+      <Link to="/verify" className="btn btn-primary btn-block">
+        Verify your phone to hire
+      </Link>
     );
   }
 
   if (!open) {
     return (
-      <div className="stack">
-        <button className="btn btn-primary" onClick={() => setOpen(true)}>
+      <div className="stack-2">
+        <button className="btn btn-primary btn-block btn-lg" onClick={() => setOpen(true)}>
           Hire &amp; pay to escrow
         </button>
-        <p className="hint" style={{ marginTop: 0 }}>
-          Your payment is held by HustleGuard and only released to the provider once you
-          approve delivery.
+        <p className="hint" style={{ marginTop: 0, textAlign: 'center' }}>
+          Held by HustleGuard — released only when you approve delivery.
         </p>
       </div>
     );
@@ -236,44 +302,39 @@ function HirePanel({ listing, user }) {
 
   const submit = async () => {
     setBusy(true);
-    setError(null);
     try {
       const { transaction } = await api.post('/transactions', { listingId: listing.id, phone });
       navigate(`/orders/${transaction.id}`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Could not start the payment');
+      toast.error(err instanceof ApiError ? err.message : 'Could not start the payment');
       setBusy(false);
     }
   };
 
   return (
-    <div className="card stack" style={{ background: 'var(--cc-bg)', boxShadow: 'none' }}>
-      <h3 style={{ margin: 0 }}>Hire &amp; pay to escrow</h3>
-
+    <motion.div
+      className="card-inset stack"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      transition={{ duration: 0.3, ease: EASE }}
+      style={{ overflow: 'hidden' }}
+    >
       {quote ? (
-        <div>
-          <div className="row-between" style={{ padding: '2px 0' }}>
-            <span>Provider fee</span>
-            <span>{KES.format(quote.feeAmount)}</span>
-          </div>
-          <div className="row-between" style={{ padding: '2px 0' }}>
-            <span>Platform fee ({quote.feeRatePct}%)</span>
-            <span>{KES.format(quote.platformFee)}</span>
-          </div>
-          <div
-            className="row-between"
-            style={{ padding: '6px 0 0', fontWeight: 800, color: 'var(--cc-ink)' }}
-          >
+        <div className="stack-2">
+          <Row label="Provider fee" value={KES.format(quote.feeAmount)} />
+          <Row label={`Platform fee (${quote.feeRatePct}%)`} value={KES.format(quote.platformFee)} />
+          <hr className="divider" />
+          <div className="row-between" style={{ fontWeight: 800, color: 'var(--text)' }}>
             <span>You pay now</span>
             <span>{KES.format(quote.amount)}</span>
           </div>
         </div>
       ) : (
-        <p className="muted" style={{ margin: 0 }}>Getting a quote…</p>
+        <SkeletonText lines={3} />
       )}
 
       <div className="field" style={{ marginBottom: 0 }}>
-        <label htmlFor="hirephone">M-Pesa number to charge</label>
+        <label htmlFor="hirephone" className="field-label">M-Pesa number</label>
         <input
           id="hirephone"
           className="input"
@@ -284,19 +345,26 @@ function HirePanel({ listing, user }) {
           }}
           inputMode="tel"
         />
-        <p className="hint">You'll get an STK Push prompt — enter your PIN to pay into escrow.</p>
+        <p className="hint">You'll get an STK Push — enter your PIN to pay in.</p>
       </div>
 
-      {error && <p className="error-text">{error}</p>}
-
-      <div className="row">
-        <button className="btn btn-primary" onClick={submit} disabled={busy || !quote}>
-          {busy ? 'Sending prompt…' : `Send M-Pesa prompt`}
+      <div className="row" style={{ gap: 8 }}>
+        <button className="btn btn-primary grow" onClick={submit} disabled={busy || !quote}>
+          {busy ? <span className="spinner" /> : 'Send M-Pesa prompt'}
         </button>
         <button className="btn btn-ghost" onClick={() => setOpen(false)} disabled={busy}>
           Cancel
         </button>
       </div>
+    </motion.div>
+  );
+}
+
+function Row({ label, value }) {
+  return (
+    <div className="row-between" style={{ fontSize: 'var(--fs-sm)' }}>
+      <span className="muted">{label}</span>
+      <span>{value}</span>
     </div>
   );
 }

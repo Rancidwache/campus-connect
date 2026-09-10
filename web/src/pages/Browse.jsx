@@ -1,7 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { api, ApiError } from '../api/client.js';
 import ListingCard from '../components/ListingCard.jsx';
+import { ListingCardSkeleton } from '../components/Skeleton.jsx';
+import { Stagger, StaggerItem } from '../components/motion.jsx';
 import { CATEGORIES } from '../lib/categories.js';
 
 const TYPES = [
@@ -80,11 +83,18 @@ export default function Browse() {
   const chips = [...CURATED, ...extras];
 
   return (
-    <div className="stack">
-      <h1 style={{ margin: 0 }}>Browse listings</h1>
+    <div className="stack-6">
+      <div className="row-between">
+        <h1 style={{ margin: 0 }}>Browse</h1>
+        {result && (
+          <span className="muted" style={{ fontSize: 'var(--fs-sm)' }}>
+            {result.pagination.total} listing{result.pagination.total === 1 ? '' : 's'}
+          </span>
+        )}
+      </div>
 
       <form
-        className="card stack"
+        className="card"
         onSubmit={(e) => {
           e.preventDefault();
           setParam({
@@ -95,93 +105,92 @@ export default function Browse() {
           });
         }}
       >
-        <div className="field" style={{ marginBottom: 0 }}>
-          <label htmlFor="q">Search</label>
-          <input id="q" name="q" className="input" defaultValue={q} placeholder="camera, tutoring, logo design…" />
+        <div className="field">
+          <input id="q" name="q" className="input" defaultValue={q} placeholder="Search — camera, tutoring, logo design…" />
         </div>
-        <div className="row">
-          <div className="field" style={{ flex: '1 1 150px', marginBottom: 0 }}>
-            <label htmlFor="type">Type</label>
-            <select id="type" className="select" value={categoryType} onChange={(e) => setParam({ categoryType: e.target.value })}>
-              {TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-            </select>
-          </div>
-          <div className="field" style={{ flex: '1 1 150px', marginBottom: 0 }}>
-            <label htmlFor="location">Location</label>
-            <input id="location" name="location" className="input" defaultValue={location} placeholder="Nairobi, Online…" />
-          </div>
-          <div className="field" style={{ flex: '0 1 110px', marginBottom: 0 }}>
-            <label htmlFor="minPrice">Min KES</label>
-            <input id="minPrice" name="minPrice" className="input" type="number" min="0" defaultValue={minPrice} />
-          </div>
-          <div className="field" style={{ flex: '0 1 110px', marginBottom: 0 }}>
-            <label htmlFor="maxPrice">Max KES</label>
-            <input id="maxPrice" name="maxPrice" className="input" type="number" min="0" defaultValue={maxPrice} />
-          </div>
-          <div className="field" style={{ flex: '1 1 150px', marginBottom: 0 }}>
-            <label htmlFor="sort">Sort</label>
-            <select id="sort" className="select" value={sort} onChange={(e) => setParam({ sort: e.target.value })}>
-              {SORTS.map((sopt) => <option key={sopt.value} value={sopt.value}>{sopt.label}</option>)}
-            </select>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button className="btn btn-primary">Apply</button>
-          </div>
+        <div style={filterGrid}>
+          <select className="select" value={categoryType} onChange={(e) => setParam({ categoryType: e.target.value })} aria-label="Type">
+            {TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+          <input name="location" className="input" defaultValue={location} placeholder="Location" aria-label="Location" />
+          <input name="minPrice" className="input" type="number" min="0" defaultValue={minPrice} placeholder="Min KES" aria-label="Min price" />
+          <input name="maxPrice" className="input" type="number" min="0" defaultValue={maxPrice} placeholder="Max KES" aria-label="Max price" />
+          <select className="select" value={sort} onChange={(e) => setParam({ sort: e.target.value })} aria-label="Sort">
+            {SORTS.map((sopt) => <option key={sopt.value} value={sopt.value}>{sopt.label}</option>)}
+          </select>
+          <button className="btn btn-primary">Apply</button>
         </div>
       </form>
 
-      <div className="row" style={{ gap: 6 }}>
-        <button
-          className={`btn btn-sm ${!category ? 'btn-primary' : 'btn-ghost'}`}
-          onClick={() => setParam({ category: '' })}
-        >
+      <div className="chip-row">
+        <button className={`chip ${!category ? 'is-active' : ''}`} onClick={() => setParam({ category: '' })}>
           All
         </button>
         {chips.map((name) => {
           const c = countOf(name);
-          if (name !== category && c === 0) return null; // hide empty curated chips
+          if (name !== category && c === 0) return null;
           return (
             <button
               key={name}
-              className={`btn btn-sm ${category === name ? 'btn-primary' : 'btn-ghost'}`}
+              className={`chip ${category === name ? 'is-active' : ''}`}
+              aria-pressed={category === name}
               onClick={() => setParam({ category: category === name ? '' : name })}
             >
-              {name}{c ? ` (${c})` : ''}
+              {name}
+              {c > 0 && <span style={{ opacity: 0.7 }}>{c}</span>}
             </button>
           );
         })}
+        {anyFilter && (
+          <button className="linkbtn" style={{ marginLeft: 'auto', alignSelf: 'center' }} onClick={() => setParams({})}>
+            Clear all
+          </button>
+        )}
       </div>
 
-      {loading && <p className="muted">Loading…</p>}
       {error && <p className="error-text">{error}</p>}
+
+      {loading && (
+        <div className="grid-listings">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <ListingCardSkeleton key={i} />
+          ))}
+        </div>
+      )}
 
       {result && !loading && (
         <>
-          <div className="row-between">
-            <p className="muted" style={{ fontSize: '0.9rem', margin: 0 }}>
-              {result.pagination.total} listing{result.pagination.total === 1 ? '' : 's'}
-            </p>
-            {anyFilter && (
-              <button className="linkbtn" onClick={() => setParams({})}>Clear filters</button>
-            )}
-          </div>
-
           {result.data.length === 0 ? (
-            <div className="card"><p style={{ margin: 0 }}>No listings match those filters yet.</p></div>
-          ) : (
-            <div className="grid-listings">
-              {result.data.map((l) => (
-                <ListingCard key={l.id} listing={l} />
-              ))}
+            <div className="empty">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+              <p style={{ margin: 0 }}>No listings match those filters yet.</p>
+              {anyFilter && (
+                <button className="btn btn-ghost btn-sm" style={{ marginTop: 12 }} onClick={() => setParams({})}>
+                  Clear filters
+                </button>
+              )}
             </div>
+          ) : (
+            <AnimatePresence mode="popLayout">
+              <Stagger className="grid-listings" gap={0.04} key={params.toString()}>
+                {result.data.map((l) => (
+                  <StaggerItem key={l.id}>
+                    <ListingCard listing={l} />
+                  </StaggerItem>
+                ))}
+              </Stagger>
+            </AnimatePresence>
           )}
 
           {result.pagination.totalPages > 1 && (
-            <div className="row-between" style={{ marginTop: 16 }}>
+            <div className="row-between" style={{ marginTop: 4 }}>
               <button className="btn btn-ghost btn-sm" disabled={page <= 1} onClick={() => setParam({ page: String(page - 1) })}>
-                Previous
+                ← Previous
               </button>
-              <span className="muted" style={{ fontSize: '0.85rem' }}>
+              <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
                 Page {result.pagination.page} of {result.pagination.totalPages}
               </span>
               <button
@@ -189,7 +198,7 @@ export default function Browse() {
                 disabled={page >= result.pagination.totalPages}
                 onClick={() => setParam({ page: String(page + 1) })}
               >
-                Next
+                Next →
               </button>
             </div>
           )}
@@ -198,3 +207,10 @@ export default function Browse() {
     </div>
   );
 }
+
+const filterGrid = {
+  display: 'grid',
+  gap: 'var(--sp-2)',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+  marginTop: 'var(--sp-3)',
+};

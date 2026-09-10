@@ -1,19 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { api, ApiError } from '../api/client.js';
 import EscrowBadge, { escrowHint } from '../components/EscrowBadge.jsx';
+import Avatar from '../components/Avatar.jsx';
+import Skeleton, { SkeletonText } from '../components/Skeleton.jsx';
+import { Pop } from '../components/motion.jsx';
 import { useNotifications } from '../context/NotificationsContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import { KES } from '../lib/format.js';
 
 const TRANSITIONAL = ['PENDING_PAYMENT', 'RELEASING', 'REFUNDING'];
+const EASE = [0.22, 1, 0.36, 1];
 
 export default function OrderDetail() {
   const { id } = useParams();
   const { refresh: refreshNotifs } = useNotifications();
+  const { toast } = useToast();
   const [tx, setTx] = useState(null);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const poll = useRef(null);
+  const prevStatus = useRef(null);
 
   const load = useCallback(async () => {
     try {
@@ -30,7 +38,6 @@ export default function OrderDetail() {
     load();
   }, [load]);
 
-  // Poll while the order is mid-transition (waiting on an M-Pesa callback).
   useEffect(() => {
     clearInterval(poll.current);
     if (tx && TRANSITIONAL.includes(tx.escrowStatus)) {
@@ -39,89 +46,114 @@ export default function OrderDetail() {
         if (next && !TRANSITIONAL.includes(next.escrowStatus)) {
           clearInterval(poll.current);
           refreshNotifs();
+          if (next.escrowStatus === 'HELD') toast.success('Funds secured in escrow');
+          if (next.escrowStatus === 'RELEASED') toast.success('Payment released to the provider');
+          if (next.escrowStatus === 'REFUNDED') toast.success('Refund sent');
         }
       }, 3000);
       return () => clearInterval(poll.current);
     }
-  }, [tx?.escrowStatus, load, refreshNotifs]);
+    return undefined;
+  }, [tx?.escrowStatus, load, refreshNotifs, toast]);
 
   const act = async (path) => {
     setBusy(true);
     setError(null);
     try {
       const { transaction } = await api.post(`/transactions/${id}/${path}`);
+      prevStatus.current = tx?.escrowStatus;
       setTx(transaction);
       refreshNotifs();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'That action failed');
+      toast.error(err instanceof ApiError ? err.message : 'That action failed');
     } finally {
       setBusy(false);
     }
   };
 
   if (error && !tx) return <p className="error-text">{error}</p>;
-  if (!tx) return <p className="muted">Loading…</p>;
+
+  if (!tx) {
+    return (
+      <div className="stack" style={{ maxWidth: 620 }}>
+        <Skeleton h={24} w={120} />
+        <div className="card stack">
+          <Skeleton h={22} w="60%" />
+          <SkeletonText lines={2} />
+          <Skeleton h={90} r="var(--r-md)" />
+        </div>
+      </div>
+    );
+  }
 
   const isClient = tx.role === 'client';
+  const other = isClient ? tx.provider : tx.client;
+  const done = ['RELEASED', 'REFUNDED'].includes(tx.escrowStatus);
 
   return (
-    <div className="stack" style={{ maxWidth: 620 }}>
-      <Link to="/orders" className="muted" style={{ fontSize: '0.9rem' }}>
-        ← All orders
+    <div className="stack-6" style={{ maxWidth: 620 }}>
+      <Link to="/orders" className="chip" style={{ alignSelf: 'flex-start' }}>
+        ← Orders
       </Link>
 
       <div className="card stack">
         <div className="row-between">
-          <h1 style={{ margin: 0, fontSize: '1.25rem' }}>{tx.listing.title}</h1>
-          <EscrowBadge status={tx.escrowStatus} />
+          <h1 style={{ margin: 0, fontSize: 'var(--fs-lg)' }}>{tx.listing.title}</h1>
+          <Pop k={tx.escrowStatus}>
+            <EscrowBadge status={tx.escrowStatus} />
+          </Pop>
         </div>
-        <p className="muted" style={{ margin: 0, fontSize: '0.9rem' }}>
-          {isClient ? 'You are hiring ' : ''}
-          <Link to={`/u/${isClient ? tx.provider.id : tx.client.id}`}>
-            {isClient ? tx.provider.fullName : tx.client.fullName}
-          </Link>
-          {isClient ? '' : ' is hiring you'}
-        </p>
 
-        <p style={{ margin: 0 }}>{escrowHint(tx.escrowStatus, tx.role)}</p>
-
-        <Link
-          to={`/messages/${isClient ? tx.provider.id : tx.client.id}`}
-          className="btn btn-ghost btn-sm"
-          style={{ alignSelf: 'flex-start' }}
-        >
-          💬 Message {(isClient ? tx.provider.fullName : tx.client.fullName).split(' ')[0]}
+        <Link to={`/u/${other.id}`} className="row" style={{ gap: 10, textDecoration: 'none' }}>
+          <Avatar src={other.avatarUrl} name={other.fullName} size={34} />
+          <span className="stack" style={{ gap: 1 }}>
+            <strong style={{ color: 'var(--text)' }}>{other.fullName}</strong>
+            <span className="faint" style={{ fontSize: 'var(--fs-xs)' }}>
+              {isClient ? 'Provider' : 'Client'}
+            </span>
+          </span>
         </Link>
 
         <div
-          className="card"
-          style={{ background: 'var(--cc-bg)', boxShadow: 'none', padding: 'var(--cc-s4)' }}
+          className="card-inset"
+          style={{
+            borderLeft: `3px solid ${done ? 'var(--ok)' : 'var(--brand)'}`,
+            background: done ? 'var(--ok-soft)' : 'var(--brand-soft)',
+            color: 'var(--text)',
+          }}
         >
+          {escrowHint(tx.escrowStatus, tx.role)}
+        </div>
+
+        <Link to={`/messages/${other.id}`} className="btn btn-ghost btn-sm" style={{ alignSelf: 'flex-start' }}>
+          💬 Message {other.fullName.split(' ')[0]}
+        </Link>
+
+        <div className="card-inset stack-2">
           <Row label={isClient ? 'Provider fee' : 'Your fee'} value={KES.format(tx.feeAmount)} />
           <Row label="Platform fee" value={KES.format(tx.platformFee)} />
+          <hr className="divider" />
           <Row label={isClient ? 'You pay' : 'Client pays'} value={KES.format(tx.amount)} strong />
         </div>
 
         <Timeline tx={tx} />
 
         {(tx.mpesaReceipt || tx.b2cReceipt) && (
-          <p className="muted" style={{ margin: 0, fontSize: '0.8rem' }}>
-            {tx.mpesaReceipt && <>Deposit receipt: <code>{tx.mpesaReceipt}</code>. </>}
-            {tx.b2cReceipt && <>Payout receipt: <code>{tx.b2cReceipt}</code>.</>}
-          </p>
+          <div className="row" style={{ gap: 6, fontSize: 'var(--fs-xs)' }}>
+            {tx.mpesaReceipt && <span className="badge badge-muted">Deposit {tx.mpesaReceipt}</span>}
+            {tx.b2cReceipt && <span className="badge badge-muted">Payout {tx.b2cReceipt}</span>}
+          </div>
         )}
 
-        {error && <p className="error-text">{error}</p>}
-
-        <div className="row">
+        <div className="row" style={{ gap: 8 }}>
           {isClient && tx.escrowStatus === 'HELD' && (
             <button className="btn btn-primary" onClick={() => act('approve')} disabled={busy}>
-              {busy ? 'Releasing…' : 'Approve delivery & release payment'}
+              {busy ? <span className="spinner" /> : 'Approve delivery & release payment'}
             </button>
           )}
           {!isClient && tx.escrowStatus === 'HELD' && (
             <button className="btn btn-ghost" onClick={() => act('decline')} disabled={busy}>
-              {busy ? 'Refunding…' : 'Decline job & refund client'}
+              {busy ? <span className="spinner" /> : 'Decline job & refund client'}
             </button>
           )}
           {isClient && ['PENDING_PAYMENT', 'PAYMENT_FAILED'].includes(tx.escrowStatus) && (
@@ -134,7 +166,7 @@ export default function OrderDetail() {
               Try again
             </Link>
           )}
-          {isClient && ['RELEASED', 'REFUNDED'].includes(tx.escrowStatus) && (
+          {isClient && done && (
             <Link to={`/u/${tx.provider.id}#reviews`} className="btn btn-ghost">
               ★ Leave a review
             </Link>
@@ -149,51 +181,73 @@ function Row({ label, value, strong }) {
   return (
     <div
       className="row-between"
-      style={{ padding: '4px 0', fontWeight: strong ? 800 : 400, color: strong ? 'var(--cc-ink)' : 'inherit' }}
+      style={{ fontSize: 'var(--fs-sm)', fontWeight: strong ? 800 : 400, color: strong ? 'var(--text)' : 'var(--text-dim)' }}
     >
       <span>{label}</span>
-      <span>{value}</span>
+      <span style={{ color: 'var(--text)' }}>{value}</span>
     </div>
   );
 }
 
 function Timeline({ tx }) {
+  const isRefund = tx.escrowStatus === 'REFUNDED' || tx.escrowStatus === 'REFUNDING';
   const steps = [
-    { key: 'created', label: 'Order created', at: tx.createdAt, done: true },
-    {
-      key: 'paid',
-      label: 'Deposit secured in escrow',
-      at: tx.paidAt,
-      done: Boolean(tx.paidAt),
-    },
+    { label: 'Order created', at: tx.createdAt, done: true },
+    { label: 'Deposit secured in escrow', at: tx.paidAt, done: Boolean(tx.paidAt), active: tx.escrowStatus === 'PENDING_PAYMENT' },
+    isRefund
+      ? { label: 'Refunded to client', at: tx.refundedAt, done: Boolean(tx.refundedAt), active: tx.escrowStatus === 'REFUNDING' }
+      : { label: 'Paid out to provider', at: tx.releasedAt, done: Boolean(tx.releasedAt), active: tx.escrowStatus === 'RELEASING' },
   ];
-  if (tx.escrowStatus === 'REFUNDED' || tx.escrowStatus === 'REFUNDING') {
-    steps.push({ key: 'refund', label: 'Refunded to client', at: tx.refundedAt, done: Boolean(tx.refundedAt) });
-  } else {
-    steps.push({
-      key: 'released',
-      label: 'Paid out to provider',
-      at: tx.releasedAt,
-      done: Boolean(tx.releasedAt),
-    });
-  }
 
   return (
-    <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-      {steps.map((s) => (
-        <li key={s.key} className="row" style={{ alignItems: 'baseline', padding: '3px 0' }}>
-          <span aria-hidden style={{ color: s.done ? 'var(--cc-ok)' : 'var(--cc-line)' }}>
-            {s.done ? '●' : '○'}
-          </span>
-          <span style={{ color: s.done ? 'var(--cc-ink)' : 'var(--cc-muted)', fontSize: '0.9rem' }}>
-            {s.label}
-            {s.at && (
-              <span className="muted">
-                {' '}
-                — {new Date(s.at).toLocaleString('en-KE', { dateStyle: 'medium', timeStyle: 'short' })}
-              </span>
+    <ol style={{ listStyle: 'none', padding: 0, margin: 0, position: 'relative' }}>
+      {steps.map((s, i) => (
+        <li key={i} style={{ display: 'flex', gap: 12, paddingBottom: i < steps.length - 1 ? 14 : 0 }}>
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <motion.span
+              initial={false}
+              animate={
+                s.active
+                  ? { scale: [1, 1.25, 1], opacity: 1 }
+                  : { scale: 1, opacity: s.done ? 1 : 0.5 }
+              }
+              transition={s.active ? { duration: 1.4, repeat: Infinity } : { duration: 0.3, ease: EASE }}
+              style={{
+                width: 16,
+                height: 16,
+                borderRadius: '50%',
+                display: 'grid',
+                placeItems: 'center',
+                fontSize: 10,
+                color: '#fff',
+                background: s.done ? 'var(--ok)' : s.active ? 'var(--brand)' : 'var(--surface-3)',
+                border: s.done || s.active ? 'none' : '2px solid var(--border-strong)',
+                flexShrink: 0,
+              }}
+            >
+              {s.done ? '✓' : ''}
+            </motion.span>
+            {i < steps.length - 1 && (
+              <span
+                style={{
+                  width: 2,
+                  flex: 1,
+                  marginTop: 2,
+                  background: s.done ? 'var(--ok)' : 'var(--border)',
+                }}
+              />
             )}
-          </span>
+          </div>
+          <div style={{ paddingTop: 0 }}>
+            <div style={{ fontSize: 'var(--fs-sm)', fontWeight: 600, color: s.done || s.active ? 'var(--text)' : 'var(--text-faint)' }}>
+              {s.label}
+            </div>
+            {s.at && (
+              <div className="faint" style={{ fontSize: 'var(--fs-xs)' }}>
+                {new Date(s.at).toLocaleString('en-KE', { dateStyle: 'medium', timeStyle: 'short' })}
+              </div>
+            )}
+          </div>
         </li>
       ))}
     </ol>

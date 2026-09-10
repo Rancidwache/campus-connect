@@ -2,6 +2,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
 import EscrowBadge from '../components/EscrowBadge.jsx';
+import Avatar from '../components/Avatar.jsx';
+import Skeleton from '../components/Skeleton.jsx';
+import { Stagger, StaggerItem } from '../components/motion.jsx';
 import { KES, timeAgo } from '../lib/format.js';
 
 const ROLES = [
@@ -34,14 +37,15 @@ export default function Orders() {
   }, [load]);
 
   return (
-    <div className="stack">
+    <div className="stack-6">
       <h1 style={{ margin: 0 }}>Orders</h1>
 
-      <div className="row">
+      <div className="chip-row">
         {ROLES.map((r) => (
           <button
             key={r.value}
-            className={`btn btn-sm ${role === r.value ? 'btn-primary' : 'btn-ghost'}`}
+            className={`chip ${role === r.value ? 'is-active' : ''}`}
+            aria-pressed={role === r.value}
             onClick={() => setParams(r.value === 'all' ? {} : { role: r.value })}
           >
             {r.label}
@@ -49,40 +53,56 @@ export default function Orders() {
         ))}
       </div>
 
-      {loading && <p className="muted">Loading…</p>}
       {error && <p className="error-text">{error}</p>}
 
+      {loading && (
+        <div className="stack">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} h={72} r="var(--r-lg)" />
+          ))}
+        </div>
+      )}
+
       {result && !loading && result.data.length === 0 && (
-        <div className="card">
-          <p style={{ margin: 0 }}>
-            No orders yet. <Link to="/browse">Browse listings</Link> to hire something, or{' '}
-            <Link to="/listings/new">post a listing</Link> to start earning.
-          </p>
+        <div className="empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M4 7h16M4 12h16M4 17h10" />
+          </svg>
+          <p style={{ margin: 0 }}>No orders yet.</p>
+          <div className="row" style={{ justifyContent: 'center', marginTop: 12 }}>
+            <Link to="/browse" className="btn btn-primary btn-sm">Browse listings</Link>
+            <Link to="/listings/new" className="btn btn-ghost btn-sm">Post a listing</Link>
+          </div>
         </div>
       )}
 
       {result && result.data.length > 0 && (
-        <div className="stack">
+        <Stagger className="stack" gap={0.04} key={role}>
           {result.data.map((t) => (
-            <Link
-              key={t.id}
-              to={`/orders/${t.id}`}
-              className="card"
-              style={{ textDecoration: 'none', display: 'block' }}
-            >
-              <div className="row-between" style={{ marginBottom: 6 }}>
-                <strong style={{ color: 'var(--cc-ink)' }}>{t.listing.title}</strong>
+            <StaggerItem key={t.id}>
+              <Link to={`/orders/${t.id}`} className="card card-hover row-between" style={{ textDecoration: 'none', gap: 12 }}>
+                <div className="row" style={{ gap: 10, flexWrap: 'nowrap', minWidth: 0 }}>
+                  <Avatar
+                    src={(t.role === 'client' ? t.provider : t.client)?.avatarUrl}
+                    name={(t.role === 'client' ? t.provider : t.client)?.fullName}
+                    size={38}
+                  />
+                  <span className="stack" style={{ gap: 2, minWidth: 0 }}>
+                    <strong style={{ color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {t.listing.title}
+                    </strong>
+                    <span className="faint" style={{ fontSize: 'var(--fs-xs)' }}>
+                      {t.role === 'client' ? `You hired ${t.provider.fullName}` : `${t.client.fullName} hired you`}
+                      {' · '}
+                      {KES.format(t.amount)} · {timeAgo(t.createdAt)}
+                    </span>
+                  </span>
+                </div>
                 <EscrowBadge status={t.escrowStatus} />
-              </div>
-              <p className="muted" style={{ margin: 0, fontSize: '0.85rem' }}>
-                {t.role === 'client'
-                  ? `You hired ${t.provider.fullName}`
-                  : `${t.client.fullName} hired you`}{' '}
-                • {KES.format(t.amount)} • {timeAgo(t.createdAt)}
-              </p>
-            </Link>
+              </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       )}
     </div>
   );

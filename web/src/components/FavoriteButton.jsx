@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -17,22 +18,37 @@ export default function FavoriteButton({ listingId, favorited, variant = 'icon',
     if (!user) return navigate('/login');
     setBusy(true);
     const next = !on;
-    setOn(next); // optimistic
+    setOn(next);
     try {
       const res = await api.post(`/listings/${listingId}/favorite`);
       setOn(res.favorited);
       onChange?.(res.favorited);
     } catch {
-      setOn(!next); // revert
+      setOn(!next);
     } finally {
       setBusy(false);
     }
   };
 
+  const heart = (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.span
+        key={on ? 'on' : 'off'}
+        initial={{ scale: 0.4, opacity: 0 }}
+        animate={{ scale: on ? [1.35, 1] : 1, opacity: 1 }}
+        exit={{ scale: 0.4, opacity: 0 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        style={{ display: 'inline-flex', color: on ? 'var(--danger)' : 'inherit' }}
+      >
+        {on ? '♥' : '♡'}
+      </motion.span>
+    </AnimatePresence>
+  );
+
   if (variant === 'button') {
     return (
       <button className="btn btn-ghost" onClick={toggle} disabled={busy} aria-pressed={on}>
-        {on ? '♥ Saved' : '♡ Save'}
+        {heart} {on ? 'Saved' : 'Save'}
       </button>
     );
   }
@@ -47,17 +63,19 @@ export default function FavoriteButton({ listingId, favorited, variant = 'icon',
       style={{
         width: 32,
         height: 32,
+        display: 'grid',
+        placeItems: 'center',
         borderRadius: '50%',
-        border: 'none',
-        background: 'rgba(255,255,255,0.9)',
-        color: on ? 'var(--cc-danger)' : 'var(--cc-muted)',
-        fontSize: 16,
-        lineHeight: 1,
+        border: '1px solid var(--border)',
+        background: 'color-mix(in srgb, var(--surface) 88%, transparent)',
+        backdropFilter: 'blur(4px)',
+        color: on ? 'var(--danger)' : 'var(--text-dim)',
+        fontSize: 15,
         cursor: 'pointer',
-        boxShadow: 'var(--cc-shadow)',
+        boxShadow: 'var(--shadow-sm)',
       }}
     >
-      {on ? '♥' : '♡'}
+      {heart}
     </button>
   );
 }
