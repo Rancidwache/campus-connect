@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import AuthShell from '../components/AuthShell.jsx';
 
 export default function VerifyOtp() {
   const { state } = useLocation();
@@ -43,62 +44,56 @@ export default function VerifyOtp() {
   };
 
   return (
-    <div className="card center-narrow">
-      <h1>Verify your phone</h1>
-      <p className="muted" style={{ fontSize: '0.9rem' }}>
-        Enter the 6-digit code we sent by SMS to <strong>{phoneNumber || 'your number'}</strong>.
-      </p>
-
+    <AuthShell
+      title="Verify your phone"
+      subtitle={<>Enter the 6-digit code we sent by SMS to <strong>{phoneNumber || 'your number'}</strong>.</>}
+      footer={<Link to="/login">Back to sign in</Link>}
+    >
       {devCode && (
-        <p className="badge badge-ok" style={{ marginBottom: 12 }}>
+        <span className="badge badge-ok" style={{ alignSelf: 'flex-start' }}>
           Dev code: {devCode}
-        </p>
+        </span>
       )}
 
-      <form onSubmit={onSubmit} className="stack" style={{ marginTop: 8 }}>
+      <form onSubmit={onSubmit} className="stack">
         {!state?.phoneNumber && (
-          <div className="field">
-            <label htmlFor="phone">Phone number</label>
+          <div className="field" style={{ marginBottom: 0 }}>
+            <label htmlFor="phone" className="field-label">Phone number</label>
             <input
               id="phone"
               className="input"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="0712345678"
+              placeholder="0712 345 678"
               inputMode="tel"
               required
             />
           </div>
         )}
-        <div className="field">
-          <label htmlFor="code">Verification code</label>
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label htmlFor="code" className="field-label">Verification code</label>
           <input
             id="code"
             className="input"
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             inputMode="numeric"
-            placeholder="123456"
+            placeholder="• • • • • •"
+            style={{ letterSpacing: '0.3em', fontSize: 'var(--fs-md)', textAlign: 'center' }}
             required
           />
         </div>
 
         {error && <p className="error-text">{error}</p>}
-        {info && <p className="badge badge-ok">{info}</p>}
+        {info && <span className="badge badge-ok" style={{ alignSelf: 'flex-start' }}>{info}</span>}
 
-        <button className="btn btn-primary btn-block" disabled={busy || code.length !== 6}>
-          {busy ? 'Verifying…' : 'Verify and continue'}
+        <button className="btn btn-primary btn-block btn-lg" disabled={busy || code.length !== 6}>
+          {busy ? <span className="spinner" /> : 'Verify and continue'}
         </button>
-      </form>
-
-      <div className="row-between" style={{ marginTop: 16 }}>
-        <button className="btn btn-ghost btn-sm" onClick={resend} type="button">
+        <button className="linkbtn" onClick={resend} type="button" style={{ alignSelf: 'center' }}>
           Resend code
         </button>
-        <Link to="/login" className="muted" style={{ fontSize: '0.9rem' }}>
-          Back to sign in
-        </Link>
-      </div>
-    </div>
+      </form>
+    </AuthShell>
   );
 }

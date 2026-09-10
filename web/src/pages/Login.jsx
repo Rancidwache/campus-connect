@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import AuthShell from '../components/AuthShell.jsx';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -23,7 +24,6 @@ export default function Login() {
       applySession(res.token, res.user);
       navigate(state?.from || '/browse', { replace: true });
     } catch (err) {
-      // An unverified account returns 403 + needsVerification — send them to verify.
       if (err instanceof ApiError && err.status === 403) {
         navigate('/verify', { state: { phoneNumber: form.phoneNumber } });
         return;
@@ -35,24 +35,27 @@ export default function Login() {
   };
 
   return (
-    <div className="card center-narrow">
-      <h1>Sign in</h1>
-      <form onSubmit={onSubmit} className="stack" style={{ marginTop: 12 }}>
-        <div className="field">
-          <label htmlFor="phone">Phone number</label>
+    <AuthShell
+      title="Welcome back"
+      subtitle="Sign in to hire, get paid, and manage your listings."
+      footer={<>New here? <Link to="/register">Create an account</Link></>}
+    >
+      <form onSubmit={onSubmit} className="stack">
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label htmlFor="phone" className="field-label">Phone number</label>
           <input
             id="phone"
             className="input"
             value={form.phoneNumber}
             onChange={update('phoneNumber')}
-            placeholder="0712345678"
+            placeholder="0712 345 678"
             inputMode="tel"
             required
             autoComplete="tel"
           />
         </div>
-        <div className="field">
-          <label htmlFor="password">Password</label>
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label htmlFor="password" className="field-label">Password</label>
           <input
             id="password"
             className="input"
@@ -66,14 +69,10 @@ export default function Login() {
 
         {error && <p className="error-text">{error}</p>}
 
-        <button className="btn btn-primary btn-block" disabled={busy}>
-          {busy ? 'Signing in…' : 'Sign in'}
+        <button className="btn btn-primary btn-block btn-lg" disabled={busy}>
+          {busy ? <span className="spinner" /> : 'Sign in'}
         </button>
       </form>
-
-      <p className="muted" style={{ fontSize: '0.9rem', marginTop: 16 }}>
-        New here? <Link to="/register">Create an account</Link>
-      </p>
-    </div>
+    </AuthShell>
   );
 }

@@ -32,6 +32,9 @@ export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => setMenuOpen(false), [location.pathname]);
+  useEffect(() => {
+    if (!location.hash) window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const onLogout = () => {
     logout();
