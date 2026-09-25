@@ -19,6 +19,7 @@ import PublicProfile from './pages/PublicProfile.jsx';
 import Saved from './pages/Saved.jsx';
 import Guidelines from './pages/Guidelines.jsx';
 import AdminReports from './pages/AdminReports.jsx';
+import AdminStats from './pages/AdminStats.jsx';
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="messages/:userId" element={<ProtectedRoute><Thread /></ProtectedRoute>} />
         <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="admin/reports" element={<ProtectedRoute><AdminReports /></ProtectedRoute>} />
+        <Route path="admin/stats" element={<ProtectedRoute><AdminStats /></ProtectedRoute>} />
         <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

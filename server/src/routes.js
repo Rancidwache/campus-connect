@@ -9,6 +9,7 @@ import notificationsRoutes from './modules/notifications/notifications.routes.js
 import messagesRoutes from './modules/messages/messages.routes.js';
 import reviewsRoutes from './modules/reviews/reviews.routes.js';
 import { reportsRouter, adminReportsRouter } from './modules/reports/reports.routes.js';
+import { adminStatsRouter } from './modules/admin/stats.routes.js';
 
 const api = Router();
 
@@ -26,5 +27,6 @@ api.use('/messages', messagesRoutes); // Module 3 — E2EE messaging (blind rela
 api.use('/reviews', reviewsRoutes); // Phase 2 — ratings & reviews
 api.use('/reports', reportsRouter); // Phase 4 — reporting
 api.use('/admin/reports', adminReportsRouter); // Phase 4 — moderation queue
+api.use('/admin/stats', adminStatsRouter); // Objective 4 — platform analytics
 
 export default api;
