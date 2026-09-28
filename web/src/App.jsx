@@ -28,6 +28,18 @@ import AdminPayments from './pages/admin/AdminPayments.jsx';
 export default function App() {
   return (
     <Routes>
+      {/* Admin console — its own shell (AdminLayout), deliberately NOT inside the
+          marketplace Layout/nav. It only ever shows admin functions. */}
+      <Route path="admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+        <Route index element={<AdminOverview />} />
+        <Route path="moderation" element={<AdminModeration />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="listings" element={<AdminListings />} />
+        <Route path="payments" element={<AdminPayments />} />
+      </Route>
+      <Route path="admin/reports" element={<Navigate to="/admin/moderation" replace />} />
+      <Route path="admin/stats" element={<Navigate to="/admin" replace />} />
+
       <Route element={<Layout />}>
         <Route index element={<Landing />} />
         <Route path="register" element={<Register />} />
@@ -46,15 +58,6 @@ export default function App() {
         <Route path="messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="messages/:userId" element={<ProtectedRoute><Thread /></ProtectedRoute>} />
         <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-        <Route path="admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-          <Route index element={<AdminOverview />} />
-          <Route path="moderation" element={<AdminModeration />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="listings" element={<AdminListings />} />
-          <Route path="payments" element={<AdminPayments />} />
-        </Route>
-        <Route path="admin/reports" element={<Navigate to="/admin/moderation" replace />} />
-        <Route path="admin/stats" element={<Navigate to="/admin" replace />} />
         <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
