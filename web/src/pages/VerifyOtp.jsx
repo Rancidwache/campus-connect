@@ -23,7 +23,7 @@ export default function VerifyOtp() {
     try {
       const res = await api.post('/auth/verify-phone', { phoneNumber, code }, { auth: false });
       applySession(res.token, res.user);
-      navigate('/browse', { replace: true });
+      navigate(res.user.isAdmin ? '/admin' : '/browse', { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Verification failed');
     } finally {

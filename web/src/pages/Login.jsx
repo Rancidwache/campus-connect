@@ -22,7 +22,7 @@ export default function Login() {
     try {
       const res = await api.post('/auth/login', form, { auth: false });
       applySession(res.token, res.user);
-      navigate(state?.from || '/browse', { replace: true });
+      navigate(state?.from || (res.user.isAdmin ? '/admin' : '/browse'), { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
         navigate('/verify', { state: { phoneNumber: form.phoneNumber } });
