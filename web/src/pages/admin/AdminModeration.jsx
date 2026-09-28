@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { api, ApiError } from '../api/client.js';
-import { useAuth } from '../context/AuthContext.jsx';
-import { timeAgo } from '../lib/format.js';
+import { Link } from 'react-router-dom';
+import { api, ApiError } from '../../api/client.js';
+import { timeAgo } from '../../lib/format.js';
 
 const TABS = ['OPEN', 'REVIEWING', 'ACTIONED', 'DISMISSED'];
 const REASON_LABEL = {
@@ -15,8 +14,7 @@ const REASON_LABEL = {
   OTHER: 'Other',
 };
 
-export default function AdminReports() {
-  const { user, loading } = useAuth();
+export default function AdminModeration() {
   const [tab, setTab] = useState('OPEN');
   const [data, setData] = useState(null);
   const [stats, setStats] = useState(null);
@@ -37,15 +35,12 @@ export default function AdminReports() {
   }, [tab]);
 
   useEffect(() => {
-    if (user?.isAdmin) load();
-  }, [user, load]);
-
-  if (loading) return <p className="muted">Loading…</p>;
-  if (!user?.isAdmin) return <Navigate to="/" replace />;
+    load();
+  }, [load]);
 
   return (
     <div className="stack">
-      <h1 style={{ margin: 0 }}>Moderation queue</h1>
+      <h1 style={{ margin: 0, fontSize: 'var(--fs-lg)' }}>Moderation</h1>
 
       <div className="row" style={{ gap: 6 }}>
         {TABS.map((s) => (
@@ -116,7 +111,7 @@ function ReportCard({ report, onDone }) {
 
       {report.detail && <p style={{ margin: 0 }}>“{report.detail}”</p>}
 
-      <div className="card" style={{ background: 'var(--cc-bg)', boxShadow: 'none', padding: 'var(--cc-s3) var(--cc-s4)' }}>
+      <div className="card-inset">
         <span className="muted" style={{ fontSize: '0.8rem' }}>Target: </span>
         {report.target.link ? (
           <Link to={report.target.link} target="_blank">{report.target.label}</Link>

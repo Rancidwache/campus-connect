@@ -65,14 +65,9 @@ export default function Layout() {
                 <IconLink to="/messages" label="Chat" count={chatUnread} icon={chatIcon} />
                 <IconLink to="/notifications" label="Alerts" count={unreadCount} icon={bellIcon} />
                 {user.isAdmin && (
-                  <>
-                    <NavLink to="/admin/reports" style={navLinkStyle}>
-                      Moderation
-                    </NavLink>
-                    <NavLink to="/admin/stats" style={navLinkStyle}>
-                      Stats
-                    </NavLink>
-                  </>
+                  <NavLink to="/admin" style={navLinkStyle}>
+                    Admin
+                  </NavLink>
                 )}
               </>
             )}
@@ -139,14 +134,9 @@ export default function Layout() {
                       Alerts {unreadCount > 0 && <span className="count-pill">{unreadCount}</span>}
                     </NavLink>
                     {user.isAdmin && (
-                      <>
-                        <NavLink to="/admin/reports" style={mobileItem}>
-                          Moderation
-                        </NavLink>
-                        <NavLink to="/admin/stats" style={mobileItem}>
-                          Stats
-                        </NavLink>
-                      </>
+                      <NavLink to="/admin" style={mobileItem}>
+                        Admin
+                      </NavLink>
                     )}
                     <NavLink to="/profile" style={mobileItem}>
                       Profile

@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { api, ApiError } from '../api/client.js';
-import { useAuth } from '../context/AuthContext.jsx';
-import { KES } from '../lib/format.js';
-import { FadeIn, Stagger, StaggerItem } from '../components/motion.jsx';
-import Avatar from '../components/Avatar.jsx';
-import Skeleton from '../components/Skeleton.jsx';
+import { Link } from 'react-router-dom';
+import { api, ApiError } from '../../api/client.js';
+import { KES } from '../../lib/format.js';
+import { FadeIn, Stagger, StaggerItem } from '../../components/motion.jsx';
+import Avatar from '../../components/Avatar.jsx';
+import Skeleton from '../../components/Skeleton.jsx';
 
 const twoCol = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
   gap: 'var(--sp-6)',
   alignItems: 'start',
 };
@@ -36,29 +35,22 @@ const STATUS_LABEL = {
   CANCELLED: 'Cancelled',
 };
 
-export default function AdminStats() {
-  const { user, loading } = useAuth();
+export default function AdminOverview() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!user?.isAdmin) return;
     api
       .get('/admin/stats')
       .then(setData)
       .catch((err) => setError(err instanceof ApiError ? err.message : 'Could not load stats'));
-  }, [user]);
-
-  if (loading) return <p className="muted">Loading…</p>;
-  if (!user?.isAdmin) return <Navigate to="/" replace />;
+  }, []);
 
   return (
     <div className="stack" style={{ gap: 'var(--sp-6)' }}>
-      <div>
-        <h1 style={{ margin: 0 }}>Platform stats</h1>
-        <p className="muted" style={{ margin: '4px 0 0' }}>
-          Live from the database — users, listings, escrow volume and payouts.
-        </p>
+      <div className="row-between">
+        <h1 style={{ margin: 0, fontSize: 'var(--fs-lg)' }}>Overview</h1>
+        <span className="badge badge-brand">Live · mock M-Pesa</span>
       </div>
 
       {error && <p className="error-text">{error}</p>}
@@ -110,16 +102,13 @@ function KpiGrid({ overview }) {
     { label: 'Platform revenue', value: KES.format(overview.platformRevenue), hint: 'commission on released orders' },
   ];
   return (
-    <Stagger
-      className="stat-grid"
-      style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 'var(--sp-4)' }}
-    >
+    <Stagger style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 'var(--sp-4)' }}>
       {tiles.map((t) => (
         <StaggerItem key={t.label} className="card">
           <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             {t.label}
           </p>
-          <p style={{ margin: '6px 0 2px', fontSize: '1.5rem', fontWeight: 800 }}>{t.value}</p>
+          <p style={{ margin: '6px 0 2px', fontSize: '1.4rem', fontWeight: 800 }}>{t.value}</p>
           <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)' }}>{t.hint}</p>
         </StaggerItem>
       ))}
@@ -131,7 +120,7 @@ function VolumeChart({ rows }) {
   const max = Math.max(1, ...rows.map((r) => r.amount));
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 120 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 110 }}>
         {rows.map((r) => (
           <div
             key={r.date}
@@ -163,7 +152,7 @@ function SignupChart({ rows }) {
   const max = Math.max(1, ...rows.map((r) => r.count));
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 120 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 110 }}>
         {rows.map((r) => (
           <div
             key={r.date}
@@ -269,7 +258,7 @@ function TopProviders({ rows }) {
 function StatsSkeleton() {
   return (
     <div className="stack" style={{ gap: 'var(--sp-6)' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 'var(--sp-4)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 'var(--sp-4)' }}>
         {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} h={86} />)}
       </div>
       <Skeleton h={180} />

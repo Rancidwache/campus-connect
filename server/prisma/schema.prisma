@@ -100,6 +100,7 @@ model User {
   passwordHash  String   @map("password_hash")
   phoneVerified Boolean  @default(false) @map("phone_verified")
   isAdmin       Boolean  @default(false) @map("is_admin")
+  isSuspended   Boolean  @default(false) @map("is_suspended")
   publicKey     String?  @map("public_key")
   bio           String?
   avatarUrl     String?  @map("avatar_url")

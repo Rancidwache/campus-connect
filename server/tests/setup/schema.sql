@@ -39,6 +39,7 @@ CREATE TABLE "users" (
     "password_hash" TEXT NOT NULL,
     "phone_verified" BOOLEAN NOT NULL DEFAULT false,
     "is_admin" BOOLEAN NOT NULL DEFAULT false,
+    "is_suspended" BOOLEAN NOT NULL DEFAULT false,
     "public_key" TEXT,
     "bio" TEXT,
     "avatar_url" TEXT,

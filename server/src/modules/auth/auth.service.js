@@ -65,6 +65,8 @@ export async function login({ phoneNumber, password }) {
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) throw unauthorized('Wrong phone number or password');
 
+  if (user.isSuspended) throw unauthorized('This account has been suspended');
+
   if (!user.phoneVerified) {
     const otp = await issueOtp(user.id, phone, 'PHONE_VERIFY');
     return { needsVerification: true, phoneNumber: phone, otp };

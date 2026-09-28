@@ -18,6 +18,7 @@ export const requireAuth = asyncHandler(async (req, _res, next) => {
 
   const user = await prisma.user.findUnique({ where: { id: payload.sub } });
   if (!user) throw unauthorized('Account no longer exists');
+  if (user.isSuspended) throw unauthorized('This account has been suspended');
 
   const { passwordHash, ...safe } = user;
   req.user = safe;

@@ -18,8 +18,12 @@ import Thread from './pages/Thread.jsx';
 import PublicProfile from './pages/PublicProfile.jsx';
 import Saved from './pages/Saved.jsx';
 import Guidelines from './pages/Guidelines.jsx';
-import AdminReports from './pages/AdminReports.jsx';
-import AdminStats from './pages/AdminStats.jsx';
+import AdminLayout from './components/AdminLayout.jsx';
+import AdminOverview from './pages/admin/AdminOverview.jsx';
+import AdminModeration from './pages/admin/AdminModeration.jsx';
+import AdminUsers from './pages/admin/AdminUsers.jsx';
+import AdminListings from './pages/admin/AdminListings.jsx';
+import AdminPayments from './pages/admin/AdminPayments.jsx';
 
 export default function App() {
   return (
@@ -42,8 +46,15 @@ export default function App() {
         <Route path="messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="messages/:userId" element={<ProtectedRoute><Thread /></ProtectedRoute>} />
         <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-        <Route path="admin/reports" element={<ProtectedRoute><AdminReports /></ProtectedRoute>} />
-        <Route path="admin/stats" element={<ProtectedRoute><AdminStats /></ProtectedRoute>} />
+        <Route path="admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+          <Route index element={<AdminOverview />} />
+          <Route path="moderation" element={<AdminModeration />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="listings" element={<AdminListings />} />
+          <Route path="payments" element={<AdminPayments />} />
+        </Route>
+        <Route path="admin/reports" element={<Navigate to="/admin/moderation" replace />} />
+        <Route path="admin/stats" element={<Navigate to="/admin" replace />} />
         <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
