@@ -583,6 +583,32 @@
   }
 }
 
+/* ── Admin console theme ───────────────────────────────────────────────
+   Same surfaces/text as the rest of the app, but its own accent (indigo,
+   not the marketplace teal) so the admin console reads as a distinct zone
+   at a glance. Scoped to .admin-scope — only the identity accent changes;
+   semantic colors (--ok/--warn/--danger/--info) are untouched. */
+.admin-scope {
+  --brand: #4f46e5;
+  --brand-strong: #4338ca;
+  --brand-soft: #eef2ff;
+  --brand-contrast: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .admin-scope {
+    --brand: #818cf8;
+    --brand-strong: #6366f1;
+    --brand-soft: #211d4a;
+    --brand-contrast: #1e1b4b;
+  }
+}
+:root[data-theme='dark'] .admin-scope {
+  --brand: #818cf8;
+  --brand-strong: #6366f1;
+  --brand-soft: #211d4a;
+  --brand-contrast: #1e1b4b;
+}
+
 /* ── Admin console shell ──────────────────────────────────────────────── */
 .admin-shell {
   display: grid;

@@ -41,7 +41,7 @@ export default function AdminLayout() {
   };
 
   return (
-    <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
+    <div className="admin-scope" style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
       <header style={styles.header}>
         <div style={styles.inner}>
           <span style={styles.brand}>
