@@ -20,6 +20,9 @@ npm-debug.log*
 server/prisma/*.db
 server/prisma/*.db-journal
 
+# Local PGlite dev database (DB_DRIVER=pglite) — fast local demo DB, not synced anywhere
+server/.localdb/
+
 # Locally-stored uploads (STORAGE_DRIVER=local)
 server/uploads/
 

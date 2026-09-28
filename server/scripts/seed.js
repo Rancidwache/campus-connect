@@ -1,7 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../src/lib/prisma.js';
 
 const USERS = [
   { fullName: 'Amina Wanjiku', phoneNumber: '+254712000001' },
