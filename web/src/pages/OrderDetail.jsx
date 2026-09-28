@@ -6,6 +6,8 @@ import EscrowBadge, { escrowHint } from '../components/EscrowBadge.jsx';
 import Avatar from '../components/Avatar.jsx';
 import Skeleton, { SkeletonText } from '../components/Skeleton.jsx';
 import { Pop } from '../components/motion.jsx';
+import DeliveryProofButton from '../components/DeliveryProofButton.jsx';
+import DisputeButton from '../components/DisputeButton.jsx';
 import { useNotifications } from '../context/NotificationsContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { KES } from '../lib/format.js';
@@ -145,13 +147,28 @@ export default function OrderDetail() {
           </div>
         )}
 
+        {tx.deliveryProof && <DeliveryProofView proof={tx.deliveryProof} />}
+
+        {tx.disputed && (
+          <div className="card-inset" style={{ borderLeft: '3px solid var(--warn)', background: 'var(--warn-soft)' }}>
+            <strong>Under review.</strong> This order was disputed — funds stay in escrow until
+            a moderator releases or refunds it. You'll be notified either way.
+          </div>
+        )}
+
         <div className="row" style={{ gap: 8 }}>
-          {isClient && tx.escrowStatus === 'HELD' && (
+          {isClient && tx.escrowStatus === 'HELD' && !tx.disputed && (
             <button className="btn btn-primary" onClick={() => act('approve')} disabled={busy}>
               {busy ? <span className="spinner" /> : 'Approve delivery & release payment'}
             </button>
           )}
-          {!isClient && tx.escrowStatus === 'HELD' && (
+          {isClient && tx.escrowStatus === 'HELD' && !tx.disputed && (
+            <DisputeButton txId={tx.id} onDone={setTx} />
+          )}
+          {!isClient && tx.escrowStatus === 'HELD' && !tx.disputed && (
+            <DeliveryProofButton txId={tx.id} hasExisting={Boolean(tx.deliveryProof)} onDone={setTx} />
+          )}
+          {!isClient && tx.escrowStatus === 'HELD' && !tx.disputed && (
             <button className="btn btn-ghost" onClick={() => act('decline')} disabled={busy}>
               {busy ? <span className="spinner" /> : 'Decline job & refund client'}
             </button>
@@ -173,6 +190,31 @@ export default function OrderDetail() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function DeliveryProofView({ proof }) {
+  return (
+    <div className="card-inset stack-2">
+      <div className="row-between">
+        <strong style={{ fontSize: 'var(--fs-sm)' }}>📸 Delivery proof</strong>
+        <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
+          {new Date(proof.createdAt).toLocaleString('en-KE', { dateStyle: 'medium', timeStyle: 'short' })}
+        </span>
+      </div>
+      <div className="row" style={{ gap: 8 }}>
+        {proof.photos.map((p) => (
+          <a key={p.id} href={p.url} target="_blank" rel="noreferrer">
+            <img
+              src={p.url}
+              alt="Delivery proof"
+              style={{ width: 88, height: 88, objectFit: 'cover', borderRadius: 'var(--r-sm)', border: '1px solid var(--border)' }}
+            />
+          </a>
+        ))}
+      </div>
+      {proof.note && <p style={{ margin: 0, fontSize: 'var(--fs-sm)' }}>{proof.note}</p>}
     </div>
   );
 }

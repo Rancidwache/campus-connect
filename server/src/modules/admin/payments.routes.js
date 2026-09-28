@@ -24,9 +24,19 @@ const listQuery = {
   }),
 };
 const exportQuery = { query: listQuery.query.omit({ page: true, pageSize: true }) };
+const idParam = { params: z.object({ id: z.coerce.number().int().positive() }) };
+const resolveSchema = {
+  ...idParam,
+  body: z.object({
+    action: z.enum(['release', 'refund']),
+    reviewNote: z.string().max(2000).optional(),
+  }),
+};
 
 // Mounted at /api/admin/transactions
 export const adminPaymentsRouter = Router();
 adminPaymentsRouter.use(requireAuth, requireAdmin);
 adminPaymentsRouter.get('/', validate(listQuery), ctrl.list);
 adminPaymentsRouter.get('/export.csv', validate(exportQuery), ctrl.exportCsv);
+adminPaymentsRouter.get('/:id', validate(idParam), ctrl.getOne);
+adminPaymentsRouter.post('/:id/resolve', validate(resolveSchema), ctrl.resolveDispute);

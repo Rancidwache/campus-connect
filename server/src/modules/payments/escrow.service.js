@@ -12,6 +12,7 @@ const TX_INCLUDE = {
   listing: { select: { id: true, title: true, categoryType: true, category: true } },
   client: { select: { id: true, fullName: true } },
   provider: { select: { id: true, fullName: true } },
+  deliveryProof: { include: { photos: { orderBy: { position: 'asc' } } } },
 };
 
 function serialize(tx, viewerId) {
@@ -19,6 +20,7 @@ function serialize(tx, viewerId) {
     id: tx.id,
     role: tx.clientId === viewerId ? 'client' : 'provider',
     escrowStatus: tx.escrowStatus,
+    disputed: tx.disputed,
     currency: tx.currency,
     feeAmount: Number(tx.feeAmount),
     platformFee: Number(tx.platformFee),
@@ -37,6 +39,13 @@ function serialize(tx, viewerId) {
     refundedAt: tx.refundedAt,
     createdAt: tx.createdAt,
     updatedAt: tx.updatedAt,
+    deliveryProof: tx.deliveryProof
+      ? {
+          note: tx.deliveryProof.note,
+          createdAt: tx.deliveryProof.createdAt,
+          photos: tx.deliveryProof.photos.map((p) => ({ id: p.id, url: p.url })),
+        }
+      : null,
   };
 }
 
@@ -224,6 +233,68 @@ export async function declineJob(userId, txId) {
   });
 
   return getTransaction(userId, txId);
+}
+
+// ── Admin resolves a delivery dispute — force-release or force-refund ──────
+// Used from the moderation queue (Report targetType TRANSACTION). Skips the
+// participant check the client/provider-driven actions above enforce, closes
+// the dispute flag, and auto-resolves any open report for this transaction.
+async function loadAny(txId) {
+  const tx = await prisma.transaction.findUnique({ where: { id: txId }, include: TX_INCLUDE });
+  if (!tx) throw notFound('Order not found');
+  return tx;
+}
+
+async function closeDispute(txId, moderatorId, reviewNote) {
+  await prisma.transaction.update({ where: { id: txId }, data: { disputed: false } });
+  await prisma.report.updateMany({
+    where: { targetType: 'TRANSACTION', targetId: txId, status: { in: ['OPEN', 'REVIEWING'] } },
+    data: { status: 'ACTIONED', reviewedById: moderatorId, reviewNote: reviewNote?.trim() || null },
+  });
+}
+
+export async function adminForceRelease(moderatorId, txId, reviewNote) {
+  const tx = await loadAny(txId);
+  if (tx.escrowStatus !== 'HELD') throw conflict(`Cannot release an order that is ${tx.escrowStatus}`);
+
+  const moved = await prisma.transaction.updateMany({
+    where: { id: tx.id, escrowStatus: 'HELD' },
+    data: { escrowStatus: 'RELEASING' },
+  });
+  if (moved.count !== 1) throw conflict('Order state changed — refresh and try again');
+
+  await closeDispute(tx.id, moderatorId, reviewNote);
+  await notify(tx.providerId, 'ESCROW_RELEASED', 'Payout released by a moderator', `A moderator resolved the dispute for "${tx.listing.title}" in your favour. Your payout is on the way.`, tx.id);
+  await notify(tx.clientId, 'DELIVERY_APPROVED', 'Dispute resolved — funds released', `A moderator reviewed "${tx.listing.title}" and released the payment to ${tx.provider.fullName}.`, tx.id);
+  await startB2c(tx, {
+    to: tx.providerPhone,
+    amount: toKes(tx.feeAmount),
+    remarks: `Campus Connect payout for order ${tx.id}`,
+    occasion: tx.listing.title.slice(0, 90),
+  });
+  return getTransaction(tx.providerId, txId);
+}
+
+export async function adminForceRefund(moderatorId, txId, reviewNote) {
+  const tx = await loadAny(txId);
+  if (tx.escrowStatus !== 'HELD') throw conflict(`Cannot refund an order that is ${tx.escrowStatus}`);
+
+  const moved = await prisma.transaction.updateMany({
+    where: { id: tx.id, escrowStatus: 'HELD' },
+    data: { escrowStatus: 'REFUNDING' },
+  });
+  if (moved.count !== 1) throw conflict('Order state changed — refresh and try again');
+
+  await closeDispute(tx.id, moderatorId, reviewNote);
+  await notify(tx.clientId, 'ESCROW_REFUNDED', 'Dispute resolved — refunded', `A moderator reviewed "${tx.listing.title}" and refunded your payment.`, tx.id);
+  await notify(tx.providerId, 'JOB_DECLINED', 'Dispute resolved against you', `A moderator reviewed "${tx.listing.title}" and refunded the client.`, tx.id);
+  await startB2c(tx, {
+    to: tx.clientPhone,
+    amount: toKes(tx.amount),
+    remarks: `Campus Connect refund for order ${tx.id}`,
+    occasion: `Refund: ${tx.listing.title}`.slice(0, 90),
+  });
+  return getTransaction(tx.clientId, txId);
 }
 
 // ── Client cancels before paying ───────────────────────────────────────────

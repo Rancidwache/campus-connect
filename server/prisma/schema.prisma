@@ -62,6 +62,8 @@ enum NotificationType {
   JOB_DECLINED
   NEW_REVIEW
   REVIEW_REPLY
+  DELIVERY_SUBMITTED // provider uploaded delivery-proof photos
+  DELIVERY_DISPUTED  // client disputed the delivery — admin queue
 }
 
 enum MediaKind {
@@ -74,6 +76,7 @@ enum ReportTargetType {
   REVIEW
   REVIEW_REPLY
   USER
+  TRANSACTION // delivery dispute — resolved by an admin releasing or refunding escrow
 }
 
 enum ReportReason {
@@ -84,6 +87,8 @@ enum ReportReason {
   OFF_PLATFORM_PAYMENT
   MISLEADING
   OTHER
+  NOT_DELIVERED           // transaction disputes
+  ITEM_NOT_AS_DESCRIBED   // transaction disputes
 }
 
 enum ReportStatus {
@@ -219,6 +224,10 @@ model Transaction {
   clientPhone   String       @map("client_phone") // E.164 snapshot — STK Push target
   providerPhone String       @map("provider_phone") // E.164 snapshot — B2C payout target
 
+  // Client disputed the provider's delivery proof (or lack of it) — open
+  // until an admin force-releases or force-refunds the escrow.
+  disputed Boolean @default(false)
+
   // STK Push (deposit collection)
   stkCheckoutRequestId String?   @unique @map("stk_checkout_request_id")
   stkMerchantRequestId String?   @map("stk_merchant_request_id")
@@ -241,11 +250,41 @@ model Transaction {
   events        MpesaEvent[]
   notifications Notification[]
   review        Review?
+  deliveryProof DeliveryProof?
 
   @@index([clientId])
   @@index([providerId])
   @@index([escrowStatus])
   @@map("transactions")
+}
+
+// Provider's proof of delivery (photos + a note) — DoorDash-style. One per
+// transaction; re-submitting replaces the note and adds/removes photos
+// rather than creating a second proof.
+model DeliveryProof {
+  id            Int         @id @default(autoincrement())
+  transactionId Int         @unique @map("transaction_id")
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  note          String?
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  photos DeliveryProofPhoto[]
+
+  @@map("delivery_proofs")
+}
+
+model DeliveryProofPhoto {
+  id              Int           @id @default(autoincrement())
+  deliveryProofId Int           @map("delivery_proof_id")
+  deliveryProof   DeliveryProof @relation(fields: [deliveryProofId], references: [id], onDelete: Cascade)
+  url             String
+  storageKey      String        @map("storage_key")
+  position        Int           @default(0)
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@index([deliveryProofId])
+  @@map("delivery_proof_photos")
 }
 
 // Raw log of every Daraja request and callback — idempotency guard + audit trail.

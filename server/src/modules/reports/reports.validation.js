@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const TARGET_TYPES = ['LISTING', 'REVIEW', 'REVIEW_REPLY', 'USER'];
+export const TARGET_TYPES = ['LISTING', 'REVIEW', 'REVIEW_REPLY', 'USER', 'TRANSACTION'];
 export const REASONS = [
   'SPAM',
   'SCAM_OR_FRAUD',
@@ -9,6 +9,8 @@ export const REASONS = [
   'OFF_PLATFORM_PAYMENT',
   'MISLEADING',
   'OTHER',
+  'NOT_DELIVERED',
+  'ITEM_NOT_AS_DESCRIBED',
 ];
 export const STATUSES = ['OPEN', 'REVIEWING', 'ACTIONED', 'DISMISSED'];
 

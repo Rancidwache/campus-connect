@@ -17,16 +17,16 @@ CREATE TYPE "EscrowStatus" AS ENUM ('PENDING_PAYMENT', 'PAYMENT_FAILED', 'HELD',
 CREATE TYPE "MpesaEventKind" AS ENUM ('STK_PUSH_REQUEST', 'STK_CALLBACK', 'B2C_REQUEST', 'B2C_RESULT', 'B2C_TIMEOUT');
 
 -- CreateEnum
-CREATE TYPE "NotificationType" AS ENUM ('ESCROW_FUNDED', 'PAYMENT_FAILED', 'DELIVERY_APPROVED', 'ESCROW_RELEASED', 'ESCROW_REFUNDED', 'JOB_DECLINED', 'NEW_REVIEW', 'REVIEW_REPLY');
+CREATE TYPE "NotificationType" AS ENUM ('ESCROW_FUNDED', 'PAYMENT_FAILED', 'DELIVERY_APPROVED', 'ESCROW_RELEASED', 'ESCROW_REFUNDED', 'JOB_DECLINED', 'NEW_REVIEW', 'REVIEW_REPLY', 'DELIVERY_SUBMITTED', 'DELIVERY_DISPUTED');
 
 -- CreateEnum
 CREATE TYPE "MediaKind" AS ENUM ('IMAGE', 'VIDEO');
 
 -- CreateEnum
-CREATE TYPE "ReportTargetType" AS ENUM ('LISTING', 'REVIEW', 'REVIEW_REPLY', 'USER');
+CREATE TYPE "ReportTargetType" AS ENUM ('LISTING', 'REVIEW', 'REVIEW_REPLY', 'USER', 'TRANSACTION');
 
 -- CreateEnum
-CREATE TYPE "ReportReason" AS ENUM ('SPAM', 'SCAM_OR_FRAUD', 'PROHIBITED_ITEM', 'HARASSMENT_OR_HATE', 'OFF_PLATFORM_PAYMENT', 'MISLEADING', 'OTHER');
+CREATE TYPE "ReportReason" AS ENUM ('SPAM', 'SCAM_OR_FRAUD', 'PROHIBITED_ITEM', 'HARASSMENT_OR_HATE', 'OFF_PLATFORM_PAYMENT', 'MISLEADING', 'OTHER', 'NOT_DELIVERED', 'ITEM_NOT_AS_DESCRIBED');
 
 -- CreateEnum
 CREATE TYPE "ReportStatus" AS ENUM ('OPEN', 'REVIEWING', 'ACTIONED', 'DISMISSED');
@@ -119,6 +119,7 @@ CREATE TABLE "transactions" (
     "escrow_status" "EscrowStatus" NOT NULL DEFAULT 'PENDING_PAYMENT',
     "client_phone" TEXT NOT NULL,
     "provider_phone" TEXT NOT NULL,
+    "disputed" BOOLEAN NOT NULL DEFAULT false,
     "stk_checkout_request_id" TEXT,
     "stk_merchant_request_id" TEXT,
     "stk_result_code" INTEGER,
@@ -135,6 +136,29 @@ CREATE TABLE "transactions" (
     "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "transactions_pkey" PRIMARY KEY ("transaction_id")
+);
+
+-- CreateTable
+CREATE TABLE "delivery_proofs" (
+    "id" SERIAL NOT NULL,
+    "transaction_id" INTEGER NOT NULL,
+    "note" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "delivery_proofs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "delivery_proof_photos" (
+    "id" SERIAL NOT NULL,
+    "delivery_proof_id" INTEGER NOT NULL,
+    "url" TEXT NOT NULL,
+    "storage_key" TEXT NOT NULL,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "delivery_proof_photos_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -275,6 +299,12 @@ CREATE INDEX "transactions_provider_id_idx" ON "transactions"("provider_id");
 CREATE INDEX "transactions_escrow_status_idx" ON "transactions"("escrow_status");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "delivery_proofs_transaction_id_key" ON "delivery_proofs"("transaction_id");
+
+-- CreateIndex
+CREATE INDEX "delivery_proof_photos_delivery_proof_id_idx" ON "delivery_proof_photos"("delivery_proof_id");
+
+-- CreateIndex
 CREATE INDEX "mpesa_events_transaction_id_idx" ON "mpesa_events"("transaction_id");
 
 -- CreateIndex
@@ -327,6 +357,12 @@ ALTER TABLE "transactions" ADD CONSTRAINT "transactions_client_id_fkey" FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_provider_id_fkey" FOREIGN KEY ("provider_id") REFERENCES "users"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "delivery_proofs" ADD CONSTRAINT "delivery_proofs_transaction_id_fkey" FOREIGN KEY ("transaction_id") REFERENCES "transactions"("transaction_id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "delivery_proof_photos" ADD CONSTRAINT "delivery_proof_photos_delivery_proof_id_fkey" FOREIGN KEY ("delivery_proof_id") REFERENCES "delivery_proofs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "mpesa_events" ADD CONSTRAINT "mpesa_events_transaction_id_fkey" FOREIGN KEY ("transaction_id") REFERENCES "transactions"("transaction_id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -98,7 +98,10 @@ export default function Orders() {
                     </span>
                   </span>
                 </div>
-                <EscrowBadge status={t.escrowStatus} />
+                <span className="row" style={{ gap: 6 }}>
+                  {t.disputed && <span className="badge badge-warn">Disputed</span>}
+                  <EscrowBadge status={t.escrowStatus} />
+                </span>
               </Link>
             </StaggerItem>
           ))}

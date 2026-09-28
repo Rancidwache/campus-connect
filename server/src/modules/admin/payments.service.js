@@ -1,10 +1,17 @@
 import { prisma } from '../../lib/prisma.js';
+import { notFound } from '../../lib/errors.js';
 import { toKes } from '../../lib/money.js';
+import { adminForceRelease, adminForceRefund } from '../payments/escrow.service.js';
 
 const INCLUDE = {
   client: { select: { id: true, fullName: true } },
   provider: { select: { id: true, fullName: true } },
   listing: { select: { id: true, title: true } },
+};
+
+const DETAIL_INCLUDE = {
+  ...INCLUDE,
+  deliveryProof: { include: { photos: { orderBy: { position: 'asc' } } } },
 };
 
 function serialize(tx) {
@@ -17,10 +24,36 @@ function serialize(tx) {
     feeAmount: toKes(tx.feeAmount),
     platformFee: toKes(tx.platformFee),
     escrowStatus: tx.escrowStatus,
+    disputed: tx.disputed,
     mpesaReceipt: tx.mpesaReceipt,
     b2cReceipt: tx.b2cReceipt,
     createdAt: tx.createdAt,
   };
+}
+
+function serializeDetail(tx) {
+  return {
+    ...serialize(tx),
+    deliveryProof: tx.deliveryProof
+      ? {
+          note: tx.deliveryProof.note,
+          createdAt: tx.deliveryProof.createdAt,
+          photos: tx.deliveryProof.photos.map((p) => ({ id: p.id, url: p.url })),
+        }
+      : null,
+  };
+}
+
+export async function getTransactionDetail(id) {
+  const tx = await prisma.transaction.findUnique({ where: { id }, include: DETAIL_INCLUDE });
+  if (!tx) throw notFound('Order not found');
+  return serializeDetail(tx);
+}
+
+export async function resolveDispute(moderatorId, id, action, reviewNote) {
+  if (action === 'release') await adminForceRelease(moderatorId, id, reviewNote);
+  else await adminForceRefund(moderatorId, id, reviewNote);
+  return getTransactionDetail(id);
 }
 
 function buildWhere({ q, status }) {

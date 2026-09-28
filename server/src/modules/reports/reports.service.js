@@ -31,6 +31,27 @@ async function loadTarget(type, id) {
       const u = await prisma.user.findUnique({ where: { id }, select: { id: true, fullName: true } });
       return u && { ownerId: u.id, label: u.fullName, link: `/u/${u.id}` };
     }
+    case 'TRANSACTION': {
+      const t = await prisma.transaction.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          providerId: true,
+          escrowStatus: true,
+          amount: true,
+          disputed: true,
+          listing: { select: { title: true } },
+        },
+      });
+      return (
+        t && {
+          ownerId: t.providerId,
+          label: `${t.listing.title} — KES ${Number(t.amount)} (${t.escrowStatus})`,
+          // Not linked: /orders/:id only opens for the two participants, not admins.
+          link: null,
+        }
+      );
+    }
     default:
       return null;
   }
@@ -121,6 +142,14 @@ export async function reportStats() {
 export async function updateReport(moderatorId, id, { status, reviewNote }) {
   const report = await prisma.report.findUnique({ where: { id } });
   if (!report) throw notFound('Report not found');
+
+  // Dismissing a transaction dispute without releasing/refunding shouldn't
+  // leave the order permanently locked — clear the flag so the normal
+  // approve/decline flow is available again.
+  if (report.targetType === 'TRANSACTION' && status === 'DISMISSED') {
+    await prisma.transaction.update({ where: { id: report.targetId }, data: { disputed: false } });
+  }
+
   return prisma.report.update({
     where: { id },
     data: {

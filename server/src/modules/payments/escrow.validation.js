@@ -34,3 +34,11 @@ export const idParamSchema = {
 export const quoteQuerySchema = {
   query: z.object({ listingId: z.coerce.number().int().positive() }),
 };
+
+export const disputeSchema = {
+  params: z.object({ id: z.coerce.number().int().positive() }),
+  body: z.object({
+    reason: z.enum(['NOT_DELIVERED', 'ITEM_NOT_AS_DESCRIBED', 'OFF_PLATFORM_PAYMENT', 'OTHER']),
+    detail: z.string().max(2000).optional(),
+  }),
+};
