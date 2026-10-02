@@ -80,7 +80,7 @@ export async function getStats() {
   const providers = topProviderIds.length
     ? await prisma.user.findMany({
         where: { id: { in: topProviderIds } },
-        select: { id: true, fullName: true, avatarUrl: true },
+        select: { id: true, userName: true, avatarUrl: true },
       })
     : [];
   const providerById = new Map(providers.map((p) => [p.id, p]));
@@ -106,7 +106,7 @@ export async function getStats() {
       .slice(0, 8),
     topProviders: topProvidersRaw
       .map((r) => ({
-        provider: providerById.get(r.providerId) ?? { id: r.providerId, fullName: 'Unknown', avatarUrl: null },
+        provider: providerById.get(r.providerId) ?? { id: r.providerId, userName: 'Unknown', avatarUrl: null },
         completedOrders: r._count._all,
         earnings: toKes(r._sum.feeAmount),
       }))

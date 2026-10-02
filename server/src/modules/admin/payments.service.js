@@ -4,8 +4,8 @@ import { toKes } from '../../lib/money.js';
 import { adminForceRelease, adminForceRefund } from '../payments/escrow.service.js';
 
 const INCLUDE = {
-  client: { select: { id: true, fullName: true } },
-  provider: { select: { id: true, fullName: true } },
+  client: { select: { id: true, userName: true } },
+  provider: { select: { id: true, userName: true } },
   listing: { select: { id: true, title: true } },
 };
 
@@ -63,8 +63,8 @@ function buildWhere({ q, status }) {
     where.OR = [
       { mpesaReceipt: { contains: q, mode: 'insensitive' } },
       { b2cReceipt: { contains: q, mode: 'insensitive' } },
-      { client: { fullName: { contains: q, mode: 'insensitive' } } },
-      { provider: { fullName: { contains: q, mode: 'insensitive' } } },
+      { client: { userName: { contains: q, mode: 'insensitive' } } },
+      { provider: { userName: { contains: q, mode: 'insensitive' } } },
     ];
   }
   return where;
@@ -116,8 +116,8 @@ export async function exportTransactionsCsv({ q, status }) {
         tx.id,
         new Date(tx.createdAt).toISOString(),
         tx.listing?.title ?? '',
-        tx.client?.fullName ?? '',
-        tx.provider?.fullName ?? '',
+        tx.client?.userName ?? '',
+        tx.provider?.userName ?? '',
         tx.amount,
         tx.platformFee,
         tx.escrowStatus,

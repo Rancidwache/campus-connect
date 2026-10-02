@@ -15,9 +15,9 @@ beforeAll(() => {
 });
 beforeEach(async () => {
   await resetDb();
-  mod = await makeUser({ fullName: 'Mod M', isAdmin: true });
-  reporter = await makeUser({ fullName: 'Rita R' });
-  owner = await makeUser({ fullName: 'Otis O' });
+  mod = await makeUser({ userName: 'Mod M', isAdmin: true });
+  reporter = await makeUser({ userName: 'Rita R' });
+  owner = await makeUser({ userName: 'Otis O' });
   listing = await makeListing(owner);
 });
 
@@ -59,7 +59,7 @@ describe('reporting', () => {
 
     const q = await request(app).get('/api/admin/reports?status=OPEN').set(auth(mod));
     expect(q.status).toBe(200);
-    expect(q.body.data[0].reporter.fullName).toBe('Rita R');
+    expect(q.body.data[0].reporter.userName).toBe('Rita R');
     expect(q.body.data[0].target).toMatchObject({ exists: true });
     expect((await request(app).get('/api/admin/reports/stats').set(auth(mod))).body.OPEN).toBe(1);
   });
@@ -96,7 +96,7 @@ describe('reporting', () => {
   });
 
   it('removing a reported review recomputes the provider rating', async () => {
-    const client = await makeUser({ fullName: 'Carl C' });
+    const client = await makeUser({ userName: 'Carl C' });
     const priced = await makeListing(owner, { price: 1000 });
     const tx = await completeOrder(app, client, priced);
     const review = (

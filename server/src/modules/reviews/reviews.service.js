@@ -7,7 +7,7 @@ const REVIEWABLE_STATES = ['RELEASED', 'REFUNDED'];
 // Any of these means the author actually transacted with the provider.
 const CUSTOMER_STATES = ['HELD', 'RELEASING', 'RELEASED', 'REFUNDING', 'REFUNDED'];
 
-const AUTHOR_SELECT = { id: true, fullName: true, avatarUrl: true };
+const AUTHOR_SELECT = { id: true, userName: true, avatarUrl: true };
 
 // ── rating rollup ──────────────────────────────────────────────────────────
 export async function recomputeProviderRating(providerId) {
@@ -60,12 +60,12 @@ export async function createReview(authorId, { transactionId, rating, body }) {
   });
   await recomputeProviderRating(tx.providerId);
 
-  const author = await prisma.user.findUnique({ where: { id: authorId }, select: { fullName: true } });
+  const author = await prisma.user.findUnique({ where: { id: authorId }, select: { userName: true } });
   await notify(
     tx.providerId,
     'NEW_REVIEW',
     `New ${rating}-star review`,
-    `${author.fullName} reviewed your work: "${truncate(body, 90)}"`,
+    `${author.userName} reviewed your work: "${truncate(body, 90)}"`,
     transactionId,
   );
 
@@ -100,7 +100,7 @@ export async function deleteReview(authorId, id) {
 export async function addReply(authorId, reviewId, { body, parentReplyId }) {
   const review = await prisma.review.findUnique({
     where: { id: reviewId },
-    include: { author: { select: { fullName: true } } },
+    include: { author: { select: { userName: true } } },
   });
   if (!review) throw notFound('Review not found');
 
@@ -113,7 +113,7 @@ export async function addReply(authorId, reviewId, { body, parentReplyId }) {
     data: { reviewId, authorId, parentReplyId: parentReplyId ?? null, body: body.trim() },
   });
 
-  const author = await prisma.user.findUnique({ where: { id: authorId }, select: { fullName: true } });
+  const author = await prisma.user.findUnique({ where: { id: authorId }, select: { userName: true } });
   const recipients = new Set([review.authorId, review.providerId]);
   recipients.delete(authorId);
   for (const uid of recipients) {
@@ -121,7 +121,7 @@ export async function addReply(authorId, reviewId, { body, parentReplyId }) {
       uid,
       'REVIEW_REPLY',
       'New reply on a review',
-      `${author.fullName}: "${truncate(body, 90)}"`,
+      `${author.userName}: "${truncate(body, 90)}"`,
       review.transactionId,
     );
   }
@@ -299,7 +299,7 @@ export async function pendingForUser(userId) {
     orderBy: { updatedAt: 'desc' },
     include: {
       listing: { select: { id: true, title: true } },
-      provider: { select: { id: true, fullName: true } },
+      provider: { select: { id: true, userName: true } },
     },
   });
   return txs.map((t) => ({

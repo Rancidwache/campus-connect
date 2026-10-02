@@ -107,9 +107,9 @@ export default function OrderDetail() {
         </div>
 
         <Link to={`/u/${other.id}`} className="row" style={{ gap: 10, textDecoration: 'none' }}>
-          <Avatar src={other.avatarUrl} name={other.fullName} size={34} />
+          <Avatar src={other.avatarUrl} name={other.userName} size={34} />
           <span className="stack" style={{ gap: 1 }}>
-            <strong style={{ color: 'var(--text)' }}>{other.fullName}</strong>
+            <strong style={{ color: 'var(--text)' }}>{other.userName}</strong>
             <span className="faint" style={{ fontSize: 'var(--fs-xs)' }}>
               {isClient ? 'Provider' : 'Client'}
             </span>
@@ -128,7 +128,7 @@ export default function OrderDetail() {
         </div>
 
         <Link to={`/messages/${other.id}`} className="btn btn-ghost btn-sm" style={{ alignSelf: 'flex-start' }}>
-          💬 Message {other.fullName.split(' ')[0]}
+          💬 Message {other.userName.split(' ')[0]}
         </Link>
 
         <div className="card-inset stack-2">

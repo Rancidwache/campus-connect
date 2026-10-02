@@ -311,8 +311,8 @@ function TopProviders({ rows }) {
         >
           <span className="row" style={{ gap: 10, alignItems: 'center' }}>
             <span className="muted" style={{ width: 18, fontSize: 'var(--fs-sm)' }}>{i + 1}</span>
-            <Avatar src={provider.avatarUrl} name={provider.fullName} size={32} />
-            <span style={{ fontWeight: 600 }}>{provider.fullName}</span>
+            <Avatar src={provider.avatarUrl} name={provider.userName} size={32} />
+            <span style={{ fontWeight: 600 }}>{provider.userName}</span>
           </span>
           <span className="row" style={{ gap: 16, alignItems: 'center' }}>
             <span className="muted" style={{ fontSize: 'var(--fs-sm)' }}>{completedOrders} order{completedOrders === 1 ? '' : 's'}</span>

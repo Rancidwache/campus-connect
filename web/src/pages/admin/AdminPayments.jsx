@@ -114,8 +114,8 @@ export default function AdminPayments() {
               {rows.map((t) => (
                 <tr key={t.id}>
                   <td className="muted">#{t.id}</td>
-                  <td><Link to={`/u/${t.provider.id}`}>{t.provider.fullName}</Link></td>
-                  <td className="muted">{t.client.fullName}</td>
+                  <td><Link to={`/u/${t.provider.id}`}>{t.provider.userName}</Link></td>
+                  <td className="muted">{t.client.userName}</td>
                   <td>{KES.format(t.amount)}</td>
                   <td><span className={`badge badge-${STATUS_TONE[t.escrowStatus] || 'muted'}`}>{t.escrowStatus}</span></td>
                   <td className="muted">{t.mpesaReceipt || t.b2cReceipt || '—'}</td>

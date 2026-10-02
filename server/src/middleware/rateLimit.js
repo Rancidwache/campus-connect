@@ -20,3 +20,12 @@ export const writeLimiter = rateLimit({
   legacyHeaders: false,
   handler,
 });
+
+// Bug reports can be filed without an account, so keep them tight per IP.
+export const bugLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  handler,
+});

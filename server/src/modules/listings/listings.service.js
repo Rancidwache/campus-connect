@@ -15,7 +15,7 @@ async function withFavorited(listings, userId) {
 
 const OWNER_SELECT = {
   id: true,
-  fullName: true,
+  userName: true,
   avatarUrl: true,
   ratingAvg: true,
   ratingCount: true,

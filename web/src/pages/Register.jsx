@@ -5,15 +5,18 @@ import AuthShell from '../components/AuthShell.jsx';
 
 export default function Register() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ fullName: '', phoneNumber: '', password: '' });
+  const [form, setForm] = useState({ userName: '', phoneNumber: '', password: '' });
+  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
   const update = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const mismatch = confirm.length > 0 && confirm !== form.password;
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    if (confirm !== form.password) return;
     setBusy(true);
     try {
       const res = await api.post('/auth/register', form, { auth: false });
@@ -33,8 +36,8 @@ export default function Register() {
     >
       <form onSubmit={onSubmit} className="stack">
         <div className="field" style={{ marginBottom: 0 }}>
-          <label htmlFor="fullName" className="field-label">Full name</label>
-          <input id="fullName" className="input" value={form.fullName} onChange={update('fullName')} required autoComplete="name" />
+          <label htmlFor="userName" className="field-label">Username</label>
+          <input id="userName" className="input" value={form.userName} onChange={update('userName')} minLength={2} maxLength={120} required autoComplete="username" />
         </div>
         <div className="field" style={{ marginBottom: 0 }}>
           <label htmlFor="phone" className="field-label">Phone number</label>
@@ -63,6 +66,20 @@ export default function Register() {
             autoComplete="new-password"
           />
           <p className="hint">At least 8 characters.</p>
+        </div>
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label htmlFor="confirmPassword" className="field-label">Confirm password</label>
+          <input
+            id="confirmPassword"
+            className="input"
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            aria-invalid={mismatch}
+            required
+            autoComplete="new-password"
+          />
+          {mismatch && <p className="error-text" style={{ margin: '4px 0 0' }}>Passwords do not match.</p>}
         </div>
 
         {error && <p className="error-text">{error}</p>}

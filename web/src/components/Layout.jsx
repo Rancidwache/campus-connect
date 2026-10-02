@@ -6,6 +6,7 @@ import { useNotifications } from '../context/NotificationsContext.jsx';
 import { useChat } from '../context/ChatContext.jsx';
 import ThemeToggle from './ThemeToggle.jsx';
 import Avatar from './Avatar.jsx';
+import BugReportButton from './BugReportButton.jsx';
 
 const PRIMARY = [
   { to: '/browse', label: 'Browse' },
@@ -74,9 +75,9 @@ export default function Layout() {
             <ThemeToggle />
             {user ? (
               <Link to="/profile" style={styles.userChip} title="Your profile">
-                <Avatar src={user.avatarUrl} name={user.fullName} size={26} />
+                <Avatar src={user.avatarUrl} name={user.userName} size={26} />
                 <span style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>
-                  {user.fullName.split(' ')[0]}
+                  {user.userName.split(' ')[0]}
                 </span>
               </Link>
             ) : (
@@ -182,9 +183,12 @@ export default function Layout() {
               Campus Connect V2 — a secure marketplace for skills, gigs and equipment hire.
               Payments held in M-Pesa escrow. Chat is end-to-end encrypted.
             </p>
-            <Link to="/guidelines" className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
-              Community Guidelines
-            </Link>
+            <div className="row" style={{ gap: 'var(--sp-5)' }}>
+              <Link to="/guidelines" className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
+                Community Guidelines
+              </Link>
+              <BugReportButton />
+            </div>
           </div>
         </div>
       </footer>

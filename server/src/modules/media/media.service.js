@@ -4,7 +4,7 @@ import { env } from '../../config/env.js';
 import { storage, newKey } from '../../lib/storage.js';
 
 const LISTING_INCLUDE = {
-  owner: { select: { id: true, fullName: true, avatarUrl: true, ratingAvg: true, ratingCount: true } },
+  owner: { select: { id: true, userName: true, avatarUrl: true, ratingAvg: true, ratingCount: true } },
   media: { orderBy: [{ kind: 'asc' }, { position: 'asc' }] },
 };
 
@@ -87,7 +87,7 @@ export async function deleteListingMedia(listingId, userId, mediaId) {
 // ── Avatars ────────────────────────────────────────────────────────────────
 const PUBLIC_PROFILE = {
   id: true,
-  fullName: true,
+  userName: true,
   phoneNumber: true,
   phoneVerified: true,
   isAdmin: true,

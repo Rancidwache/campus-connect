@@ -89,9 +89,9 @@ export default function ListingDetail() {
           <hr className="divider" />
 
           <Link to={`/u/${listing.owner?.id}`} className="row" style={{ gap: 10, textDecoration: 'none' }}>
-            <Avatar src={listing.owner?.avatarUrl} name={listing.owner?.fullName} size={40} />
+            <Avatar src={listing.owner?.avatarUrl} name={listing.owner?.userName} size={40} />
             <span className="stack" style={{ gap: 1 }}>
-              <strong style={{ color: 'var(--text)' }}>{listing.owner?.fullName}</strong>
+              <strong style={{ color: 'var(--text)' }}>{listing.owner?.userName}</strong>
               {listing.owner?.ratingCount > 0 ? (
                 <span className="row" style={{ gap: 5 }}>
                   <Stars value={listing.owner.ratingAvg} size={12} />
@@ -133,7 +133,7 @@ export default function ListingDetail() {
                 <HirePanel listing={listing} user={user} />
                 {user && listing.owner?.id && (
                   <Link to={`/messages/${listing.owner.id}`} className="btn btn-ghost btn-block">
-                    Message {listing.owner.fullName.split(' ')[0]} first
+                    Message {listing.owner.userName.split(' ')[0]} first
                   </Link>
                 )}
                 <div style={{ textAlign: 'center' }}>
@@ -148,7 +148,7 @@ export default function ListingDetail() {
       {listing.owner?.id && (
         <ReviewsSection
           providerId={listing.owner.id}
-          providerName={listing.owner.fullName.split(' ')[0]}
+          providerName={listing.owner.userName.split(' ')[0]}
         />
       )}
     </div>

@@ -93,7 +93,7 @@ export default function AdminListings() {
                       <Link to={`/listings/${l.id}`} target="_blank" style={{ color: 'var(--text)', fontWeight: 600 }}>{l.title}</Link>
                     )}
                   </td>
-                  <td className="muted"><Link to={`/u/${l.owner.id}`}>{l.owner.fullName}</Link></td>
+                  <td className="muted"><Link to={`/u/${l.owner.id}`}>{l.owner.userName}</Link></td>
                   <td className="muted">{l.category}</td>
                   <td><span className={`badge badge-${STATUS_TONE[l.status]}`}>{l.status}</span></td>
                   <td>{KES.format(l.price)}</td>

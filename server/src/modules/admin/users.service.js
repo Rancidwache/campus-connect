@@ -3,7 +3,7 @@ import { badRequest, notFound } from '../../lib/errors.js';
 
 const SELECT = {
   id: true,
-  fullName: true,
+  userName: true,
   phoneNumber: true,
   isAdmin: true,
   isSuspended: true,
@@ -17,7 +17,7 @@ export async function listUsers({ q, page, pageSize }) {
   const where = q
     ? {
         OR: [
-          { fullName: { contains: q, mode: 'insensitive' } },
+          { userName: { contains: q, mode: 'insensitive' } },
           { phoneNumber: { contains: q, mode: 'insensitive' } },
         ],
       }

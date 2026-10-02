@@ -28,8 +28,8 @@ async function loadTarget(type, id) {
       return r && { ownerId: r.authorId, label: r.body.slice(0, 120), link: `/u/${r.review.providerId}#reviews` };
     }
     case 'USER': {
-      const u = await prisma.user.findUnique({ where: { id }, select: { id: true, fullName: true } });
-      return u && { ownerId: u.id, label: u.fullName, link: `/u/${u.id}` };
+      const u = await prisma.user.findUnique({ where: { id }, select: { id: true, userName: true } });
+      return u && { ownerId: u.id, label: u.userName, link: `/u/${u.id}` };
     }
     case 'TRANSACTION': {
       const t = await prisma.transaction.findUnique({
@@ -103,8 +103,8 @@ export async function listReports({ status, page, pageSize }) {
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
-        reporter: { select: { id: true, fullName: true } },
-        reviewedBy: { select: { id: true, fullName: true } },
+        reporter: { select: { id: true, userName: true } },
+        reviewedBy: { select: { id: true, userName: true } },
       },
     }),
   ]);

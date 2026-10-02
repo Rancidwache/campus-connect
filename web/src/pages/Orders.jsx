@@ -84,7 +84,7 @@ export default function Orders() {
                 <div className="row" style={{ gap: 10, flexWrap: 'nowrap', minWidth: 0 }}>
                   <Avatar
                     src={(t.role === 'client' ? t.provider : t.client)?.avatarUrl}
-                    name={(t.role === 'client' ? t.provider : t.client)?.fullName}
+                    name={(t.role === 'client' ? t.provider : t.client)?.userName}
                     size={38}
                   />
                   <span className="stack" style={{ gap: 2, minWidth: 0 }}>
@@ -92,7 +92,7 @@ export default function Orders() {
                       {t.listing.title}
                     </strong>
                     <span className="faint" style={{ fontSize: 'var(--fs-xs)' }}>
-                      {t.role === 'client' ? `You hired ${t.provider.fullName}` : `${t.client.fullName} hired you`}
+                      {t.role === 'client' ? `You hired ${t.provider.userName}` : `${t.client.userName} hired you`}
                       {' · '}
                       {KES.format(t.amount)} · {timeAgo(t.createdAt)}
                     </span>

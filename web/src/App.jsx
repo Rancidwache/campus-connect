@@ -21,6 +21,7 @@ import Guidelines from './pages/Guidelines.jsx';
 import AdminLayout from './components/AdminLayout.jsx';
 import AdminOverview from './pages/admin/AdminOverview.jsx';
 import AdminModeration from './pages/admin/AdminModeration.jsx';
+import AdminBugs from './pages/admin/AdminBugs.jsx';
 import AdminUsers from './pages/admin/AdminUsers.jsx';
 import AdminListings from './pages/admin/AdminListings.jsx';
 import AdminPayments from './pages/admin/AdminPayments.jsx';
@@ -33,6 +34,7 @@ export default function App() {
       <Route path="admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
         <Route index element={<AdminOverview />} />
         <Route path="moderation" element={<AdminModeration />} />
+        <Route path="bugs" element={<AdminBugs />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="listings" element={<AdminListings />} />
         <Route path="payments" element={<AdminPayments />} />

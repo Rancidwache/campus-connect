@@ -5,7 +5,7 @@ import { SOCIAL_KEYS } from '../../lib/socials.js';
 
 export const updateMeSchema = {
   body: z.object({
-    fullName: z.string().min(2).max(120).optional(),
+    userName: z.string().min(2).max(120).optional(),
     bio: z.string().max(600).optional(),
     socials: z
       .object(Object.fromEntries(SOCIAL_KEYS.map((k) => [k, z.string().max(300).optional()])))

@@ -13,8 +13,8 @@ beforeAll(() => {
 });
 beforeEach(async () => {
   await resetDb();
-  alice = await makeUser({ fullName: 'Alice A' });
-  bob = await makeUser({ fullName: 'Bob B' });
+  alice = await makeUser({ userName: 'Alice A' });
+  bob = await makeUser({ userName: 'Bob B' });
 });
 
 describe('listings CRUD + guards', () => {

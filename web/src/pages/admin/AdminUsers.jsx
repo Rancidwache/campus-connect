@@ -33,7 +33,7 @@ export default function AdminUsers() {
     setBusyId(u.id);
     try {
       await api.patch(`/admin/users/${u.id}/admin`, { isAdmin: !u.isAdmin });
-      toast.success(u.isAdmin ? `Revoked admin from ${u.fullName}` : `${u.fullName} is now an admin`);
+      toast.success(u.isAdmin ? `Revoked admin from ${u.userName}` : `${u.userName} is now an admin`);
       load(q);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Action failed');
@@ -46,7 +46,7 @@ export default function AdminUsers() {
     setBusyId(u.id);
     try {
       await api.patch(`/admin/users/${u.id}/suspend`, { isSuspended: !u.isSuspended });
-      toast.success(u.isSuspended ? `${u.fullName} can sign in again` : `${u.fullName} was suspended`);
+      toast.success(u.isSuspended ? `${u.userName} can sign in again` : `${u.userName} was suspended`);
       load(q);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Action failed');
@@ -91,8 +91,8 @@ export default function AdminUsers() {
                 <tr key={u.id} style={u.isSuspended ? { opacity: 0.6 } : undefined}>
                   <td>
                     <span className="row" style={{ gap: 8, alignItems: 'center' }}>
-                      <Avatar name={u.fullName} size={26} />
-                      <Link to={`/u/${u.id}`} style={{ fontWeight: 600, color: 'var(--text)' }}>{u.fullName}</Link>
+                      <Avatar name={u.userName} size={26} />
+                      <Link to={`/u/${u.id}`} style={{ fontWeight: 600, color: 'var(--text)' }}>{u.userName}</Link>
                       <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{u.phoneNumber}</span>
                       {u.isSuspended && <span className="badge badge-danger">Suspended</span>}
                     </span>

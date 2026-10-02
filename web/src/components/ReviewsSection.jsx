@@ -173,11 +173,11 @@ function ReviewCard({ review, providerId, onChange }) {
   return (
     <div className="card stack" style={{ gap: 8 }}>
       <div className="row" style={{ gap: 10, alignItems: 'flex-start' }}>
-        <Avatar src={review.author.avatarUrl} name={review.author.fullName} size={36} />
+        <Avatar src={review.author.avatarUrl} name={review.author.userName} size={36} />
         <div style={{ flex: 1 }}>
           <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <Link to={`/u/${review.author.id}`} style={{ fontWeight: 700, color: roleColor(review.authorRole) }}>
-              {review.author.fullName}
+              {review.author.userName}
             </Link>
             <RoleBadge role={review.authorRole} />
             <span className="muted" style={{ fontSize: '0.8rem' }}>{timeAgo(review.createdAt)}</span>
@@ -241,11 +241,11 @@ function ReplyRow({ reply, onChange }) {
   };
   return (
     <div className="row" style={{ gap: 8, alignItems: 'flex-start' }}>
-      <Avatar src={reply.author.avatarUrl} name={reply.author.fullName} size={26} />
+      <Avatar src={reply.author.avatarUrl} name={reply.author.userName} size={26} />
       <div style={{ flex: 1 }}>
         <div className="row" style={{ gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
           <Link to={`/u/${reply.author.id}`} style={{ fontWeight: 600, fontSize: '0.85rem', color: roleColor(reply.authorRole) }}>
-            {reply.author.fullName}
+            {reply.author.userName}
           </Link>
           <RoleBadge role={reply.authorRole} />
           <span className="muted" style={{ fontSize: '0.75rem' }}>{timeAgo(reply.createdAt)}</span>

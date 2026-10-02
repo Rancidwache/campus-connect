@@ -8,7 +8,7 @@ Messages, Transactions**. Prisma schema: `server/prisma/schema.prisma`.
 | Key | Field | Type | Notes |
 | --- | --- | --- | --- |
 | PK | `user_id` | Int | Auto-increment |
-| | `full_name` | String | Display name |
+| | `user_name` | String | Username |
 | | `phone_number` | String, unique | Login + M-Pesa STK Push target (E.164, e.g. `+2547XXXXXXXX`) |
 | | `password_hash` | String | bcrypt |
 | | `phone_verified` | Boolean | Set true after OTP check; gate for hiring/payouts |

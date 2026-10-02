@@ -6,7 +6,7 @@ const code = z.string().regex(/^\d{6}$/, 'Enter the 6-digit code');
 
 export const registerSchema = {
   body: z.object({
-    fullName: z.string().min(2, 'Enter your name').max(120),
+    userName: z.string().min(2, 'Enter a username').max(120),
     phoneNumber: phone,
     password,
   }),

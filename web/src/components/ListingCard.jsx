@@ -50,7 +50,7 @@ export default function ListingCard({ listing }) {
         <div className="row-between" style={{ marginTop: 'auto', paddingTop: 10 }}>
           <span className="price">{KES.format(listing.price)}</span>
           <span className="stack" style={{ gap: 1, alignItems: 'flex-end' }}>
-            <span className="faint" style={{ fontSize: 'var(--fs-xs)' }}>{listing.owner?.fullName}</span>
+            <span className="faint" style={{ fontSize: 'var(--fs-xs)' }}>{listing.owner?.userName}</span>
             {listing.owner?.ratingCount > 0 && (
               <span className="row" style={{ gap: 3 }}>
                 <Stars value={listing.owner.ratingAvg} size={11} />

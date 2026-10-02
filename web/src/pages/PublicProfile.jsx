@@ -43,10 +43,10 @@ export default function PublicProfile() {
     <div className="stack">
       <div className="card stack">
         <div className="row" style={{ alignItems: 'center', gap: 16 }}>
-          <Avatar src={profile.avatarUrl} name={profile.fullName} size={80} />
+          <Avatar src={profile.avatarUrl} name={profile.userName} size={80} />
           <div className="stack" style={{ gap: 4 }}>
             <div className="row" style={{ alignItems: 'center', gap: 8 }}>
-              <h1 style={{ margin: 0, fontSize: '1.4rem' }}>{profile.fullName}</h1>
+              <h1 style={{ margin: 0, fontSize: '1.4rem' }}>{profile.userName}</h1>
               {profile.phoneVerified && <span className="badge badge-ok">Phone verified</span>}
             </div>
             {profile.ratingCount > 0 && (
@@ -73,7 +73,7 @@ export default function PublicProfile() {
           ) : (
             me && (
               <Link to={`/messages/${profile.id}`} className="btn btn-ghost btn-sm">
-                💬 Message {profile.fullName.split(' ')[0]}
+                💬 Message {profile.userName.split(' ')[0]}
               </Link>
             )
           )}
@@ -94,7 +94,7 @@ export default function PublicProfile() {
         </div>
       )}
 
-      <ReviewsSection providerId={profile.id} providerName={profile.fullName.split(' ')[0]} />
+      <ReviewsSection providerId={profile.id} providerName={profile.userName.split(' ')[0]} />
     </div>
   );
 }

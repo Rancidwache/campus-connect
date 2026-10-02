@@ -98,9 +98,22 @@ enum ReportStatus {
   DISMISSED
 }
 
+enum BugSeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum BugStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  WONT_FIX
+}
+
 model User {
   id            Int      @id @default(autoincrement()) @map("user_id")
-  fullName      String   @map("full_name")
+  userName      String   @map("user_name")
   phoneNumber   String   @unique @map("phone_number")
   passwordHash  String   @map("password_hash")
   phoneVerified Boolean  @default(false) @map("phone_verified")
@@ -133,6 +146,7 @@ model User {
   favorites              Favorite[]
   reportsFiled            Report[]       @relation("ReportsByReporter")
   reportsHandled          Report[]       @relation("ReportsByModerator")
+  bugReports              BugReport[]    @relation("BugReportsByUser")
 
   @@map("users")
 }
@@ -418,4 +432,29 @@ model Report {
   @@index([status])
   @@index([targetType, targetId])
   @@map("reports")
+}
+
+// "Report a bug" — problems with the app itself (not marketplace content, which
+// is what Report is for). Anonymous reports are allowed: bugs can happen on the
+// sign-in screen, before there is an account to attribute them to.
+model BugReport {
+  id          Int         @id @default(autoincrement())
+  userId      Int?        @map("user_id")
+  user        User?       @relation("BugReportsByUser", fields: [userId], references: [id], onDelete: SetNull)
+  title       String
+  description String
+  severity    BugSeverity @default(MEDIUM)
+  // Auto-captured by the client so the bug can be reproduced.
+  pageUrl     String?     @map("page_url")
+  userAgent   String?     @map("user_agent")
+  // Only used for anonymous reports, so there is a way to follow up.
+  contact     String?
+  status      BugStatus   @default(OPEN)
+  adminNote   String?     @map("admin_note")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("bug_reports")
 }

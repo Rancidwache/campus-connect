@@ -75,7 +75,7 @@ export default function Messages() {
             style={{ textDecoration: 'none', display: 'block' }}
           >
             <div className="row-between" style={{ marginBottom: 2 }}>
-              <strong style={{ color: 'var(--cc-ink)' }}>{t.user.fullName}</strong>
+              <strong style={{ color: 'var(--cc-ink)' }}>{t.user.userName}</strong>
               <span className="muted" style={{ fontSize: '0.8rem' }}>
                 {timeAgo(t.lastMessage?.createdAt)}
               </span>

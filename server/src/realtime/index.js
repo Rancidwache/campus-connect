@@ -24,7 +24,7 @@ export function initRealtime(httpServer) {
       const payload = verifyAccessToken(token);
       const user = await prisma.user.findUnique({
         where: { id: payload.sub },
-        select: { id: true, fullName: true },
+        select: { id: true, userName: true },
       });
       if (!user) return next(new Error('unauthorized'));
 

@@ -9,9 +9,9 @@ const bad = (schema, value) => expect(() => schema.parse(value)).toThrow();
 
 describe('auth validation', () => {
   it('register requires name, phone and an 8+ char password', () => {
-    ok(registerSchema.body, { fullName: 'Amina W', phoneNumber: '0712345678', password: 'Password123' });
-    bad(registerSchema.body, { fullName: 'A', phoneNumber: '0712345678', password: 'Password123' });
-    bad(registerSchema.body, { fullName: 'Amina', phoneNumber: '0712345678', password: 'short' });
+    ok(registerSchema.body, { userName: 'Amina W', phoneNumber: '0712345678', password: 'Password123' });
+    bad(registerSchema.body, { userName: 'A', phoneNumber: '0712345678', password: 'Password123' });
+    bad(registerSchema.body, { userName: 'Amina', phoneNumber: '0712345678', password: 'short' });
   });
   it('login needs a non-empty password', () => {
     ok(loginSchema.body, { phoneNumber: '0712345678', password: 'x' });

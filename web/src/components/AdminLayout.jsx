@@ -8,6 +8,7 @@ import Avatar from './Avatar.jsx';
 const LINKS = [
   { to: '/admin', label: 'Overview', end: true },
   { to: '/admin/moderation', label: 'Moderation' },
+  { to: '/admin/bugs', label: 'Bugs' },
   { to: '/admin/users', label: 'Users' },
   { to: '/admin/listings', label: 'Listings' },
   { to: '/admin/payments', label: 'Payments' },
@@ -19,12 +20,17 @@ export default function AdminLayout() {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
   const [openReports, setOpenReports] = useState(null);
+  const [openBugs, setOpenBugs] = useState(null);
 
   useEffect(() => {
     if (!user?.isAdmin) return;
     api
       .get('/admin/reports/stats')
       .then((s) => setOpenReports((s?.OPEN ?? 0) + (s?.REVIEWING ?? 0)))
+      .catch(() => {});
+    api
+      .get('/admin/bug-reports?pageSize=1')
+      .then((r) => setOpenBugs(r?.counts?.OPEN ?? 0))
       .catch(() => {});
   }, [user]);
 
@@ -51,8 +57,8 @@ export default function AdminLayout() {
           <div className="row" style={{ gap: 14, alignItems: 'center' }}>
             <ThemeToggle />
             <span className="row" style={{ gap: 8, alignItems: 'center' }}>
-              <Avatar src={user.avatarUrl} name={user.fullName} size={26} />
-              <span style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>{user.fullName.split(' ')[0]}</span>
+              <Avatar src={user.avatarUrl} name={user.userName} size={26} />
+              <span style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>{user.userName.split(' ')[0]}</span>
             </span>
             <button className="linkbtn" onClick={onLogout}>Sign out</button>
             <Link to="/" className="btn btn-ghost btn-sm">← Back to app</Link>
@@ -73,6 +79,9 @@ export default function AdminLayout() {
                 {l.label}
                 {l.to === '/admin/moderation' && !!openReports && (
                   <span className="badge badge-danger" style={{ marginLeft: 'auto' }}>{openReports}</span>
+                )}
+                {l.to === '/admin/bugs' && !!openBugs && (
+                  <span className="badge badge-warn" style={{ marginLeft: 'auto' }}>{openBugs}</span>
                 )}
               </NavLink>
             ))}

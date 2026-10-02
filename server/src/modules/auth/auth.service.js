@@ -8,7 +8,7 @@ import { issueOtp, verifyOtp } from './otp.service.js';
 
 const PUBLIC_USER = {
   id: true,
-  fullName: true,
+  userName: true,
   phoneNumber: true,
   phoneVerified: true,
   isAdmin: true,
@@ -16,7 +16,7 @@ const PUBLIC_USER = {
   createdAt: true,
 };
 
-export async function register({ fullName, phoneNumber, password }) {
+export async function register({ userName, phoneNumber, password }) {
   const phone = normalizeKePhone(phoneNumber);
 
   const existing = await prisma.user.findUnique({ where: { phoneNumber: phone } });
@@ -24,7 +24,7 @@ export async function register({ fullName, phoneNumber, password }) {
 
   const passwordHash = await bcrypt.hash(password, env.bcryptRounds);
   const user = await prisma.user.create({
-    data: { fullName: fullName.trim(), phoneNumber: phone, passwordHash },
+    data: { userName: userName.trim(), phoneNumber: phone, passwordHash },
     select: PUBLIC_USER,
   });
 
@@ -78,7 +78,7 @@ export async function login({ phoneNumber, password }) {
 function pick(user) {
   return {
     id: user.id,
-    fullName: user.fullName,
+    userName: user.userName,
     phoneNumber: user.phoneNumber,
     phoneVerified: user.phoneVerified,
     isAdmin: user.isAdmin,

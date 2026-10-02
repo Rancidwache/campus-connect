@@ -2,9 +2,9 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../src/lib/prisma.js';
 
 const USERS = [
-  { fullName: 'Amina Wanjiku', phoneNumber: '+254712000001' },
-  { fullName: 'Brian Otieno', phoneNumber: '+254712000002' },
-  { fullName: 'Cynthia Mwikali', phoneNumber: '+254712000003' },
+  { userName: 'Amina Wanjiku', phoneNumber: '+254712000001' },
+  { userName: 'Brian Otieno', phoneNumber: '+254712000002' },
+  { userName: 'Cynthia Mwikali', phoneNumber: '+254712000003' },
 ];
 
 const LISTINGS = [

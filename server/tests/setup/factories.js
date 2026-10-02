@@ -14,7 +14,7 @@ export async function makeUser(overrides = {}) {
   seq += 1;
   const user = await prisma.user.create({
     data: {
-      fullName: overrides.fullName || `User ${seq}`,
+      userName: overrides.userName || `User ${seq}`,
       phoneNumber: overrides.phoneNumber || `+2547120000${String(seq).padStart(2, '0')}`,
       passwordHash: await passwordHash(),
       phoneVerified: overrides.phoneVerified ?? true,

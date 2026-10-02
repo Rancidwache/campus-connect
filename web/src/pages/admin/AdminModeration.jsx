@@ -112,8 +112,8 @@ function ReportCard({ report, onDone }) {
 
       <p className="muted" style={{ margin: 0, fontSize: '0.85rem' }}>
         {isTransaction ? 'Disputed by' : 'Reported by'}{' '}
-        <Link to={`/u/${report.reporter.id}`}>{report.reporter.fullName}</Link>
-        {report.reviewedBy && <> · handled by {report.reviewedBy.fullName}</>}
+        <Link to={`/u/${report.reporter.id}`}>{report.reporter.userName}</Link>
+        {report.reviewedBy && <> · handled by {report.reviewedBy.userName}</>}
       </p>
 
       {report.detail && <p style={{ margin: 0 }}>“{report.detail}”</p>}
@@ -208,8 +208,8 @@ function TransactionPanel({ targetId, fallbackLabel }) {
         <span className="badge badge-muted">{tx.escrowStatus}</span>
       </div>
       <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)' }}>
-        Client: <Link to={`/u/${tx.client.id}`}>{tx.client.fullName}</Link> · Provider:{' '}
-        <Link to={`/u/${tx.provider.id}`}>{tx.provider.fullName}</Link>
+        Client: <Link to={`/u/${tx.client.id}`}>{tx.client.userName}</Link> · Provider:{' '}
+        <Link to={`/u/${tx.provider.id}`}>{tx.provider.userName}</Link>
       </p>
 
       {tx.deliveryProof ? (

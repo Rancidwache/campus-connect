@@ -18,7 +18,7 @@ const user = await prisma.user
   .catch(() => null);
 
 if (!user) console.error(`No user with phone ${phone}`);
-else console.log(`${user.fullName} (${phone}) isAdmin = ${user.isAdmin}`);
+else console.log(`${user.userName} (${phone}) isAdmin = ${user.isAdmin}`);
 
 await prisma.$disconnect();
 process.exit(user ? 0 : 1);

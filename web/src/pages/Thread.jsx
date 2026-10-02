@@ -112,7 +112,7 @@ export default function Thread() {
       <div className="row-between">
         <h1 style={{ margin: 0, fontSize: '1.2rem' }}>
           <Link to={`/u/${partner.id}`} style={{ color: 'var(--cc-ink)' }}>
-            {partner.fullName}
+            {partner.userName}
           </Link>
         </h1>
         <span className="badge badge-ok">🔒 End-to-end encrypted</span>
@@ -126,7 +126,7 @@ export default function Thread() {
       )}
       {hasLocalKeypair() && !partner.publicKey && (
         <div className="card">
-          <p style={{ margin: 0 }}>{partner.fullName} hasn't set up encrypted chat yet. You can't message them until they do.</p>
+          <p style={{ margin: 0 }}>{partner.userName} hasn't set up encrypted chat yet. You can't message them until they do.</p>
         </div>
       )}
 

@@ -25,7 +25,7 @@ async function requireChatReady(meId, otherId) {
     prisma.user.findUnique({ where: { id: meId }, select: { publicKey: true } }),
     prisma.user.findUnique({
       where: { id: otherId },
-      select: { id: true, fullName: true, publicKey: true },
+      select: { id: true, userName: true, publicKey: true },
     }),
   ]);
   if (!other) throw notFound('User not found');
@@ -33,7 +33,7 @@ async function requireChatReady(meId, otherId) {
     throw badRequest('Set up your encryption key first (Profile → encrypted chat).');
   }
   if (!other.publicKey) {
-    throw badRequest(`${other.fullName} has not set up encrypted chat yet.`);
+    throw badRequest(`${other.userName} has not set up encrypted chat yet.`);
   }
   return other;
 }
@@ -135,7 +135,7 @@ export async function listThreads(meId) {
   const [users, lastMessages] = await Promise.all([
     prisma.user.findMany({
       where: { id: { in: otherIds } },
-      select: { id: true, fullName: true, publicKey: true },
+      select: { id: true, userName: true, publicKey: true },
     }),
     prisma.message.findMany({ where: { id: { in: lastIds } } }),
   ]);
@@ -150,7 +150,7 @@ export async function listThreads(meId) {
       return {
         user: {
           id: otherId,
-          fullName: u?.fullName || 'Unknown',
+          userName: u?.userName || 'Unknown',
           publicKey: u?.publicKey || null,
         },
         unread: unreadBy.get(otherId) || 0,
@@ -170,8 +170,8 @@ export async function getChatPartner(meId, otherId) {
   if (meId === otherId) throw badRequest('You cannot message yourself');
   const u = await prisma.user.findUnique({
     where: { id: otherId },
-    select: { id: true, fullName: true, publicKey: true, createdAt: true },
+    select: { id: true, userName: true, publicKey: true, createdAt: true },
   });
   if (!u) throw notFound('User not found');
-  return { id: u.id, fullName: u.fullName, publicKey: u.publicKey, createdAt: u.createdAt };
+  return { id: u.id, userName: u.userName, publicKey: u.publicKey, createdAt: u.createdAt };
 }

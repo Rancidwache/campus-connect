@@ -2,7 +2,7 @@ import { prisma } from '../../lib/prisma.js';
 import { notFound } from '../../lib/errors.js';
 import { removeListing } from '../listings/listings.service.js';
 
-const OWNER_SELECT = { id: true, fullName: true };
+const OWNER_SELECT = { id: true, userName: true };
 
 function serialize(listing) {
   return {
@@ -27,7 +27,7 @@ export async function listAllListings({ q, status, page, pageSize }) {
     where.OR = [
       { title: { contains: q, mode: 'insensitive' } },
       { category: { contains: q, mode: 'insensitive' } },
-      { owner: { fullName: { contains: q, mode: 'insensitive' } } },
+      { owner: { userName: { contains: q, mode: 'insensitive' } } },
     ];
   }
 

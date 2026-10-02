@@ -31,10 +31,16 @@ CREATE TYPE "ReportReason" AS ENUM ('SPAM', 'SCAM_OR_FRAUD', 'PROHIBITED_ITEM', 
 -- CreateEnum
 CREATE TYPE "ReportStatus" AS ENUM ('OPEN', 'REVIEWING', 'ACTIONED', 'DISMISSED');
 
+-- CreateEnum
+CREATE TYPE "BugSeverity" AS ENUM ('LOW', 'MEDIUM', 'HIGH');
+
+-- CreateEnum
+CREATE TYPE "BugStatus" AS ENUM ('OPEN', 'IN_PROGRESS', 'RESOLVED', 'WONT_FIX');
+
 -- CreateTable
 CREATE TABLE "users" (
     "user_id" SERIAL NOT NULL,
-    "full_name" TEXT NOT NULL,
+    "user_name" TEXT NOT NULL,
     "phone_number" TEXT NOT NULL,
     "password_hash" TEXT NOT NULL,
     "phone_verified" BOOLEAN NOT NULL DEFAULT false,
@@ -262,6 +268,24 @@ CREATE TABLE "reports" (
     CONSTRAINT "reports_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "bug_reports" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "severity" "BugSeverity" NOT NULL DEFAULT 'MEDIUM',
+    "page_url" TEXT,
+    "user_agent" TEXT,
+    "contact" TEXT,
+    "status" "BugStatus" NOT NULL DEFAULT 'OPEN',
+    "admin_note" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "bug_reports_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_phone_number_key" ON "users"("phone_number");
 
@@ -333,6 +357,12 @@ CREATE INDEX "reports_target_type_target_id_idx" ON "reports"("target_type", "ta
 
 -- CreateIndex
 CREATE UNIQUE INDEX "reports_reporter_id_target_type_target_id_key" ON "reports"("reporter_id", "target_type", "target_id");
+
+-- CreateIndex
+CREATE INDEX "bug_reports_status_idx" ON "bug_reports"("status");
+
+-- CreateIndex
+CREATE INDEX "bug_reports_created_at_idx" ON "bug_reports"("created_at");
 
 -- AddForeignKey
 ALTER TABLE "otp_codes" ADD CONSTRAINT "otp_codes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -414,4 +444,7 @@ ALTER TABLE "reports" ADD CONSTRAINT "reports_reporter_id_fkey" FOREIGN KEY ("re
 
 -- AddForeignKey
 ALTER TABLE "reports" ADD CONSTRAINT "reports_reviewed_by_id_fkey" FOREIGN KEY ("reviewed_by_id") REFERENCES "users"("user_id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bug_reports" ADD CONSTRAINT "bug_reports_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE SET NULL ON UPDATE CASCADE;
 

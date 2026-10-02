@@ -65,7 +65,7 @@ All routes are prefixed with `/api`. Send `Authorization: Bearer <token>` where 
 
 | Method | Path | Body | Notes |
 | --- | --- | --- | --- |
-| POST | `/register` | `fullName, phoneNumber, password` | Creates the account, sends an SMS OTP |
+| POST | `/register` | `userName, phoneNumber, password` | Creates the account, sends an SMS OTP |
 | POST | `/verify-phone` | `phoneNumber, code` | Marks the phone verified, returns a token |
 | POST | `/resend-code` | `phoneNumber` | Sends a fresh OTP |
 | POST | `/login` | `phoneNumber, password` | Returns a token; `403 + needsVerification` if unverified |
@@ -77,7 +77,7 @@ Phone numbers accept `0712345678`, `712345678`, `254712…`, `+254712…`.
 | Method | Path | Auth | Notes |
 | --- | --- | --- | --- |
 | GET | `/me` | yes | Current profile |
-| PATCH | `/me` | yes | Update `fullName`, `bio`, `socials` (normalised to URLs) |
+| PATCH | `/me` | yes | Update `userName`, `bio`, `socials` (normalised to URLs) |
 | PUT | `/me/public-key` | yes | Register the device public key for E2EE chat |
 | POST | `/me/avatar` | yes | Upload a profile photo (multipart `avatar`) |
 | DELETE | `/me/avatar` | yes | Remove the profile photo |

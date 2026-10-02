@@ -25,7 +25,7 @@ export default function Profile() {
   const { user, setUser } = useAuth();
 
   const [form, setForm] = useState({
-    fullName: user.fullName,
+    userName: user.userName,
     bio: user.bio || '',
     socials: Object.fromEntries(SOCIAL_KEYS.map((k) => [k, user.socials?.[k] || ''])),
   });
@@ -49,7 +49,7 @@ export default function Profile() {
         Object.entries(form.socials).filter(([, v]) => v.trim()),
       );
       const { user: updated } = await api.patch('/users/me', {
-        fullName: form.fullName,
+        userName: form.userName,
         bio: form.bio,
         socials,
       });
@@ -123,7 +123,7 @@ export default function Profile() {
 
       <form className="card stack" onSubmit={saveProfile}>
         <div className="row" style={{ alignItems: 'center', gap: 16 }}>
-          <Avatar src={user.avatarUrl} name={user.fullName} size={72} />
+          <Avatar src={user.avatarUrl} name={user.userName} size={72} />
           <div className="stack" style={{ gap: 6 }}>
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={pickAvatar} />
             <button
@@ -143,12 +143,12 @@ export default function Profile() {
         </div>
 
         <div className="field" style={{ marginBottom: 0 }}>
-          <label htmlFor="name">Name</label>
+          <label htmlFor="name">Username</label>
           <input
             id="name"
             className="input"
-            value={form.fullName}
-            onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
+            value={form.userName}
+            onChange={(e) => setForm((f) => ({ ...f, userName: e.target.value }))}
             minLength={2}
             required
           />

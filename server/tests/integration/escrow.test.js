@@ -15,8 +15,8 @@ beforeAll(() => {
 });
 beforeEach(async () => {
   await resetDb();
-  client = await makeUser({ fullName: 'Client C' });
-  provider = await makeUser({ fullName: 'Provider P' });
+  client = await makeUser({ userName: 'Client C' });
+  provider = await makeUser({ userName: 'Provider P' });
   listing = await makeListing(provider, { price: 2500 });
 });
 

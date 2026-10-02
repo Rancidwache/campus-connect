@@ -14,7 +14,7 @@ describe('auth flow', () => {
   it('register → verify OTP → sign in', async () => {
     const reg = await request(app)
       .post('/api/auth/register')
-      .send({ fullName: 'Amina Wanjiku', phoneNumber: '0712345678', password: 'Password123' });
+      .send({ userName: 'Amina Wanjiku', phoneNumber: '0712345678', password: 'Password123' });
     expect(reg.status).toBe(201);
     expect(reg.body.user.phoneNumber).toBe('+254712345678');
     expect(reg.body.user.phoneVerified).toBe(false);
@@ -37,7 +37,7 @@ describe('auth flow', () => {
   it('rejects a wrong OTP and a duplicate phone', async () => {
     await request(app)
       .post('/api/auth/register')
-      .send({ fullName: 'Bee', phoneNumber: '0712000002', password: 'Password123' });
+      .send({ userName: 'Bee', phoneNumber: '0712000002', password: 'Password123' });
 
     const bad = await request(app)
       .post('/api/auth/verify-phone')
@@ -46,14 +46,14 @@ describe('auth flow', () => {
 
     const dup = await request(app)
       .post('/api/auth/register')
-      .send({ fullName: 'Bee2', phoneNumber: '254712000002', password: 'Password123' });
+      .send({ userName: 'Bee2', phoneNumber: '254712000002', password: 'Password123' });
     expect(dup.status).toBe(409);
   });
 
   it('login on an unverified account asks for verification (403)', async () => {
     await request(app)
       .post('/api/auth/register')
-      .send({ fullName: 'Cee', phoneNumber: '0712000003', password: 'Password123' });
+      .send({ userName: 'Cee', phoneNumber: '0712000003', password: 'Password123' });
     const res = await request(app)
       .post('/api/auth/login')
       .send({ phoneNumber: '0712000003', password: 'Password123' });
@@ -69,7 +69,7 @@ describe('auth flow', () => {
   it('/users/me returns the profile and never the password hash', async () => {
     const reg = await request(app)
       .post('/api/auth/register')
-      .send({ fullName: 'Dee', phoneNumber: '0712000004', password: 'Password123' });
+      .send({ userName: 'Dee', phoneNumber: '0712000004', password: 'Password123' });
     const { body } = await request(app)
       .post('/api/auth/verify-phone')
       .send({ phoneNumber: '0712000004', code: reg.body.devCode });

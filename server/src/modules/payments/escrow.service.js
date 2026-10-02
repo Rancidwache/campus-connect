@@ -10,8 +10,8 @@ const OPEN_STATES = ['PENDING_PAYMENT', 'HELD', 'RELEASING', 'REFUNDING'];
 
 const TX_INCLUDE = {
   listing: { select: { id: true, title: true, categoryType: true, category: true } },
-  client: { select: { id: true, fullName: true } },
-  provider: { select: { id: true, fullName: true } },
+  client: { select: { id: true, userName: true } },
+  provider: { select: { id: true, userName: true } },
   deliveryProof: { include: { photos: { orderBy: { position: 'asc' } } } },
 };
 
@@ -160,7 +160,7 @@ export async function handleStkCallback(body) {
         tx.providerId,
         'ESCROW_FUNDED',
         'Funds secured — you can start the job',
-        `${tx.client.fullName} paid ${tx.currency} ${Number(tx.amount)} into escrow for "${tx.listing.title}".`,
+        `${tx.client.userName} paid ${tx.currency} ${Number(tx.amount)} into escrow for "${tx.listing.title}".`,
         tx.id,
       );
       await notify(
@@ -201,7 +201,7 @@ export async function approveDelivery(userId, txId) {
   });
   if (moved.count !== 1) throw conflict('Order state changed — refresh and try again');
 
-  await notify(tx.providerId, 'DELIVERY_APPROVED', 'Delivery approved', `${tx.client.fullName} approved "${tx.listing.title}". Your payout is on the way.`, tx.id);
+  await notify(tx.providerId, 'DELIVERY_APPROVED', 'Delivery approved', `${tx.client.userName} approved "${tx.listing.title}". Your payout is on the way.`, tx.id);
   await startB2c(tx, {
     to: tx.providerPhone,
     amount: toKes(tx.feeAmount),
@@ -224,7 +224,7 @@ export async function declineJob(userId, txId) {
   });
   if (moved.count !== 1) throw conflict('Order state changed — refresh and try again');
 
-  await notify(tx.clientId, 'JOB_DECLINED', 'Provider declined — you are being refunded', `${tx.provider.fullName} declined "${tx.listing.title}". Your full payment is being returned.`, tx.id);
+  await notify(tx.clientId, 'JOB_DECLINED', 'Provider declined — you are being refunded', `${tx.provider.userName} declined "${tx.listing.title}". Your full payment is being returned.`, tx.id);
   await startB2c(tx, {
     to: tx.clientPhone,
     amount: toKes(tx.amount),
@@ -265,7 +265,7 @@ export async function adminForceRelease(moderatorId, txId, reviewNote) {
 
   await closeDispute(tx.id, moderatorId, reviewNote);
   await notify(tx.providerId, 'ESCROW_RELEASED', 'Payout released by a moderator', `A moderator resolved the dispute for "${tx.listing.title}" in your favour. Your payout is on the way.`, tx.id);
-  await notify(tx.clientId, 'DELIVERY_APPROVED', 'Dispute resolved — funds released', `A moderator reviewed "${tx.listing.title}" and released the payment to ${tx.provider.fullName}.`, tx.id);
+  await notify(tx.clientId, 'DELIVERY_APPROVED', 'Dispute resolved — funds released', `A moderator reviewed "${tx.listing.title}" and released the payment to ${tx.provider.userName}.`, tx.id);
   await startB2c(tx, {
     to: tx.providerPhone,
     amount: toKes(tx.feeAmount),
@@ -368,7 +368,7 @@ export async function handleB2cResult(body) {
     });
     if (done.count === 1) {
       await notify(tx.providerId, 'ESCROW_RELEASED', 'You have been paid', `${tx.currency} ${Number(tx.feeAmount)} for "${tx.listing.title}" has been sent to ${tx.providerPhone}.`, tx.id);
-      await notify(tx.clientId, 'ESCROW_RELEASED', 'Order complete', `Funds for "${tx.listing.title}" have been released to ${tx.provider.fullName}.`, tx.id);
+      await notify(tx.clientId, 'ESCROW_RELEASED', 'Order complete', `Funds for "${tx.listing.title}" have been released to ${tx.provider.userName}.`, tx.id);
     }
   } else {
     const done = await prisma.transaction.updateMany({

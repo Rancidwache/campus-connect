@@ -64,7 +64,7 @@ export async function submitDeliveryProof(providerId, txId, files, note) {
     tx.clientId,
     'DELIVERY_SUBMITTED',
     'Delivery proof submitted',
-    `${tx.provider.fullName} marked "${tx.listing.title}" as delivered with photo proof. Review it and release payment, or raise a dispute.`,
+    `${tx.provider.userName} marked "${tx.listing.title}" as delivered with photo proof. Review it and release payment, or raise a dispute.`,
     tx.id,
   );
 
@@ -102,7 +102,7 @@ export async function disputeDelivery(clientId, txId, { reason, detail }) {
     tx.providerId,
     'DELIVERY_DISPUTED',
     'Delivery disputed',
-    `${tx.client.fullName} disputed "${tx.listing.title}". Funds stay in escrow until a moderator reviews it.`,
+    `${tx.client.userName} disputed "${tx.listing.title}". Funds stay in escrow until a moderator reviews it.`,
     tx.id,
   );
 

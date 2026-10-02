@@ -4,7 +4,7 @@ import { normalizeSocials } from '../../lib/socials.js';
 
 const PUBLIC_PROFILE = {
   id: true,
-  fullName: true,
+  userName: true,
   phoneNumber: true,
   phoneVerified: true,
   isAdmin: true,
@@ -20,7 +20,7 @@ const PUBLIC_PROFILE = {
 // Public view of another user (a listing owner / chat partner). No phone number.
 const PUBLIC_VIEW = {
   id: true,
-  fullName: true,
+  userName: true,
   publicKey: true,
   bio: true,
   avatarUrl: true,
@@ -39,7 +39,7 @@ export async function getMe(userId) {
 
 export async function updateMe(userId, data) {
   const patch = {};
-  if (data.fullName !== undefined) patch.fullName = data.fullName.trim();
+  if (data.userName !== undefined) patch.userName = data.userName.trim();
   if (data.bio !== undefined) patch.bio = data.bio.trim() || null;
   if (data.socials !== undefined) patch.socials = normalizeSocials(data.socials);
   const user = await prisma.user.update({ where: { id: userId }, data: patch, select: PUBLIC_PROFILE });
@@ -77,7 +77,7 @@ export async function getPublicListings(userId, { page, pageSize }) {
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
-        owner: { select: { id: true, fullName: true } },
+        owner: { select: { id: true, userName: true } },
         media: { orderBy: [{ kind: 'asc' }, { position: 'asc' }] },
       },
     }),
