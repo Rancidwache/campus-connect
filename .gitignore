@@ -1,11 +1,20 @@
 # Dependencies
 node_modules/
 
-# Environment
+# Environment & secrets — only the *.example templates are ever committed
 .env
-.env.local
+.env.*
+!.env.example
 *.local
 deploy/.env
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+service-account*.json
+*credentials*.json
+secrets.*
 
 # Build output
 dist/

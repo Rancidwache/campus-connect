@@ -1,0 +1,5 @@
+#!/bin/sh
+# Blocks commits that contain secrets (see scripts/check-secrets.mjs).
+# Already active in this clone. On a fresh clone, enable it with:
+#   git config core.hooksPath scripts/git-hooks
+node "$(git rev-parse --show-toplevel)/scripts/check-secrets.mjs" || exit 1

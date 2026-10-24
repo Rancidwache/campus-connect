@@ -80,3 +80,10 @@ npm run dev                   # http://localhost:5173
 ```
 
 See `server/README.md` and `docs/` for detail.
+
+## Keeping secrets out of git
+
+- Real keys and passwords live only in `server/.env` (and `deploy/.env`), which are git-ignored. Only the `*.env.example` templates are committed, with placeholders.
+- A pre-commit hook (`scripts/git-hooks/pre-commit`, runs `scripts/check-secrets.mjs`) blocks any commit containing an env file, a private key, a known key format (JWT/service keys, AWS, Stripe, GitHub, Google), a database URL with a real password, or a value copied from your local `.env`. On a fresh clone, enable it with `git config core.hooksPath scripts/git-hooks`.
+- Scan everything tracked at any time with `node scripts/check-secrets.mjs --all`.
+- Before going live, replace the development defaults (`MPESA_CALLBACK_SECRET`, `JWT_SECRET`) with long random values, and never reuse the sandbox Daraja credentials in production.
